@@ -171,7 +171,7 @@
 ## 🔗 File Relationships
 
 ```
-WellInformed Project
+PatientMap Project
 │
 ├── QUICK_START.md (Entry point for new users)
 │   └── Links to full guides
