@@ -1,0 +1,72 @@
+---
+config:
+  layout: fixed
+---
+flowchart TD
+ subgraph subGraph0["Orchestrator Tools"]
+        O1["Task Routing &amp; Session Store<br>(Firestore, LangChain Memory)"]
+        ORCH["Orchestrator Agent<br>Routes tasks between agents while adapting tone and logic for families or clinicians."]
+  end
+ subgraph subGraph1["Communication Tools"]
+        C1["Medical↔Lay Translation<br>(SimpleMed, LaySumm, UMLS)"]
+        C2["Readability &amp; Tone Modulation<br>(textstat, Gemini prompts)"]
+        C3["Multilingual Support<br>(Google Translate API)"]
+        COMM["Communication Agent<br>Refines message clarity and adjusts medical content for patients or professionals."]
+  end
+ subgraph subGraph2["Reviewer Tools"]
+        R1["LLM QA Validator<br>(RAG + Case Context)"]
+        R2["Terminology Normaliser<br>(UMLS, SNOMED)"]
+        R3["Output Formatter<br>(HTML/PDF exporter)"]
+        REVIEW["Reviewer Agent<br>Validates outputs for accuracy, tone, and completeness before final delivery."]
+  end
+ subgraph subGraph3["Clinical Tools"]
+        CL1["Diagnostic Models<br>(AMIE, ClinicalT5, BioGPT)"]
+        CL2["Symptom Checkers<br>(SymCAT, Isabel)"]
+        CL3["Ontology Rules Engine<br>(DxFormer, ICD-10)"]
+        CLIN["Clinical Agent<br>Synthesizes symptoms, history, and inputs to generate diagnostic insights."]
+  end
+ subgraph subGraph4["Extraction Tools"]
+        E1["Speech-to-Text<br>(Google STT, Whisper)"]
+        E2["NER/Entity Tagging<br>(scispaCy, MedSpaCy)"]
+        E3["JSON Structuring<br>(Pydantic, Marvin)"]
+        E4["OCR (optional)<br>(Tesseract, Vision API)"]
+        EXTRACT["Data Extraction Agent<br>Parses multimodal input (e.g., voice, text) into structured clinical data."]
+  end
+ subgraph subGraph5["Graph Tools"]
+        K1["Graph Engine<br>(Neo4j, NetworkX)"]
+        K2["Ontology Mapper<br>(UMLS, BioPortal)"]
+        K3["Graph Visualiser<br>(Cytoscape.js, Bloom)"]
+        KG["Knowledge Graph Agent<br>Builds and updates a structured graph of concepts, events, and relationships."]
+  end
+ subgraph subGraph6["Research Tools"]
+        Rsch1["PubMed / Entrez<br>(Biopython)"]
+        Rsch2["Semantic Scholar / ArXiv API"]
+        Rsch3["Web Search<br>(SerpAPI, ddg, Google Programmable Search)"]
+        Rsch4["PDF/Metadata Tools<br>(Grobid, pdfminer)"]
+        RESEARCH["Research Agent<br>Finds and incorporates supporting evidence from medical literature and databases."]
+  end
+    ORCH --> O1 & COMM & REVIEW & CLIN & EXTRACT & KG & RESEARCH
+    COMM --> C1 & ORCH
+    C1 --> C2
+    C2 --> C3
+    REVIEW --> R1 & ORCH
+    R1 --> R2
+    R2 --> R3
+    CLIN --> CL1 & ORCH
+    CL1 --> CL2
+    CL2 --> CL3
+    EXTRACT --> E1 & KG
+    E1 --> E2
+    E2 --> E3
+    E3 --> E4
+    KG --> K1
+    K1 --> K2
+    K2 --> K3
+    RESEARCH --> Rsch1
+    Rsch1 --> Rsch2
+    Rsch2 --> Rsch3
+    Rsch3 --> Rsch4
+    UI(["User Input"]) --> GD(["Gather Details"])
+    GD --> Check{"Complete?"}
+    Check -- Yes --> ORCH
+    Check -- No --> GD
