@@ -1,4 +1,4 @@
-# Quick Start Guide - WellInformed Libraries
+# Quick Start Guide - PatientMap Libraries
 
 ## 📦 One-Line Installation
 
