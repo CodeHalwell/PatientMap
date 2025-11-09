@@ -1,6 +1,6 @@
 # Documentation Generation Summary
 
-## Project: WellInformed
+## Project: PatientMap
 ## Date: 2024
 ## Task: Generate Comprehensive Library Documentation
 
