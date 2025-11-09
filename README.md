@@ -1,10 +1,10 @@
-# WellInformed - Clinical Researcher Agent
+# PatientMap - Clinical Researcher Agent
 
 A sophisticated AI agent for researching medical conditions, analyzing peer-reviewed clinical literature, and synthesizing evidence-based insights using multiple APIs and data sources.
 
 ## Overview
 
-WellInformed uses a multi-tool approach to provide comprehensive clinical research capabilities:
+PatientMap uses a multi-tool approach to provide comprehensive clinical research capabilities:
 
 - **Semantic Scholar**: Search 200M+ academic papers on medical topics
 - **Habanero (CrossRef)**: Retrieve DOI metadata and bibliographic information
