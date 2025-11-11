@@ -12,6 +12,7 @@ src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
 from google.adk import Agent
+from google.adk.agents import LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.tools import google_search
 from patientmap.common.config import AgentConfig
 
@@ -22,13 +23,7 @@ try:
     config = AgentConfig(str(config_path)).get_agent()
     orchestrator_settings = config
 except FileNotFoundError:
-    # Fallback to default settings if config file not found
-    orchestrator_settings = type('obj', (object,), {
-        'agent_name': 'orchestrator',
-        'description': 'Orchestrates clinical research across specialized agents',
-        'model': 'gemini-2.5-flash',
-        'instruction': 'You are a clinical research orchestrator coordinating specialized agents.'
-    })()
+    raise RuntimeError("Orchestrator agent configuration file not found. Please create the file at '.profiles/orchestrator_agent.yaml'.")
 
 # Create root agent
 root_agent = Agent(
@@ -38,6 +33,10 @@ root_agent = Agent(
     instruction=orchestrator_settings.instruction,
     tools=[google_search]
 )
+
+
+
+
 
 if __name__ == "__main__":
     print(root_agent)

@@ -1,5 +1,5 @@
 agent_id: oa001
-agent_name: Orchestrator Agent
+agent_name: Orchestrator_Agent
 model: 'gemini-2.5-flash'
 description: >
   The Orchestrator Agent coordinates the activities of various specialized agents within the 

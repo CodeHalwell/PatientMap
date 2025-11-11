@@ -1,5 +1,5 @@
 import yaml
-from common.models import AgentSettings
+from patientmap.common.models import AgentSettings
 
 
 class AgentConfig:

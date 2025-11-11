@@ -1,5 +1,5 @@
 agent_id: dea001
-agent_name: Data Extraction Agent
+agent_name: Data_Extraction_Agent
 model: 'gemini-2.5-flash'
 description: An agent specialized in extracting structured data from unstructured healthcare documents.
 instruction: >

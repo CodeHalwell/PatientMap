@@ -11,7 +11,7 @@ from pathlib import Path
 src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
-from google.adk import Agent
+from google.adk import Agent, Runner
 from google.adk.tools import google_search
 from patientmap.common.config import AgentConfig
 
@@ -21,16 +21,11 @@ config_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / 
 try:
     config = AgentConfig(str(config_path)).get_agent()
     clinical_settings = config
-except FileNotFoundError:
-    # Fallback to default settings
-    clinical_settings = type('obj', (object,), {
-        'agent_name': 'clinical_researcher',
-        'description': 'Researches medical conditions and clinical evidence',
-        'model': 'gemini-2.5-flash',
-        'instruction': """You are a clinical researcher specializing in medical literature analysis.
-        Your role is to research medical conditions, analyze peer-reviewed evidence,
-        and synthesize clinical findings into actionable insights."""
-    })()
+except (FileNotFoundError) as e:
+    raise FileNotFoundError(f"Configuration file not found at {config_path}") from e
+finally:
+    # Clean up sys.path
+    sys.path.pop(0)
 
 # Create agent
 root_agent = Agent(
@@ -40,6 +35,15 @@ root_agent = Agent(
     instruction=clinical_settings.instruction,
     tools=[google_search]
 )
+
+# Create runner
+runner = Runner(
+    app="patientmap",
+    app_name="patientmap",
+    agent=root_agent)
+
+# Run agent
+runner.run()
 
 if __name__ == "__main__":
     print(root_agent)

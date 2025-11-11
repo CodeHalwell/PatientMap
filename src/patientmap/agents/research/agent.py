@@ -12,31 +12,52 @@ src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
 from google.adk import Agent
-from google.adk.tools import google_search
+from google.adk.agents import LoopAgent, SequentialAgent
+from google.adk.tools import google_search, url_context
 from patientmap.common.config import AgentConfig
+from patientmap.agents.knowledge_graph.agent import root_agent as kg_agent
 
 # Load configuration
-config_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / "research_agent.yaml"
+researcher_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / "research" / "research_agent.yaml"
+topics_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / "research" / "research_topics.yaml"
 
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    research_settings = config
+    researcher_config = AgentConfig(str(researcher_path)).get_agent()
+    topics_config = AgentConfig(str(topics_path)).get_agent()
 except FileNotFoundError:
-    # Fallback to default settings
-    research_settings = type('obj', (object,), {
-        'agent_name': 'researcher',
-        'description': 'Conducts literature and clinical research',
-        'model': 'gemini-2.5-flash',
-        'instruction': 'You are a research agent that conducts thorough literature reviews.'
-    })()
+    raise RuntimeError("Research agent configuration file not found. Please create the file at '.profiles/research/research_agent.yaml'.")
 
-# Create agent
-root_agent = Agent(
-    name=research_settings.agent_name,
-    description=research_settings.description,
-    model=research_settings.model,
-    instruction=research_settings.instruction,
-    tools=[google_search]
+
+research_topics = Agent(
+    name=topics_config.agent_name,
+    description=topics_config.description,
+    model=topics_config.model,
+    instruction=topics_config.instruction,
+    output_key="research_topics_list",
+)
+
+
+research_agent = Agent(
+    name=researcher_config.agent_name,
+    description=researcher_config.description,
+    model=researcher_config.model,
+    instruction=f"{researcher_config.instruction}\n\nResearch topics to investigate: {{research_topics_list}}",
+    tools=[google_search, url_context],
+    output_key="research_findings"
+)
+
+
+research_loop_agent = LoopAgent(
+    name="research_loop_agent",
+    description="An agent that iteratively conducts detailed literature reviews to gather clinical evidence for all research topics.",
+    sub_agents=[research_agent],
+    max_iterations=10,
+)
+
+root_agent = SequentialAgent(
+    name="research_root_agent",
+    description="An agent that coordinates the research process by first identifying topics and then conducting literature reviews.",
+    sub_agents=[research_topics, research_loop_agent, kg_agent],
 )
 
 if __name__ == "__main__":
