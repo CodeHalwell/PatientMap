@@ -10,7 +10,6 @@ from pathlib import Path
 # Add src to path for relative imports
 src_path = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
-from google.genai import types
 from google.adk.models.google_llm import Gemini
 from google.adk import Agent
 from patientmap.common.config import AgentConfig

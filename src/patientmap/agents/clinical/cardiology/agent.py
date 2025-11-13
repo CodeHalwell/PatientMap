@@ -10,13 +10,9 @@ from pathlib import Path
 # Add src to path for relative imports
 src_path = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
-from typing import Any, Optional
-from google.genai import types
 from google.adk.models.google_llm import Gemini
-from google.adk import Agent, Runner
-from google.adk.agents import SequentialAgent
-from google.adk.tools import google_search, url_context, AgentTool, BaseTool
-from google.adk.tools.tool_context import ToolContext
+from google.adk import Agent
+from google.adk.tools import google_search, url_context, AgentTool
 from patientmap.common.config import AgentConfig
 from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, semantic_scholar_tool, wikipedia_tool
 from patientmap.common.helper_functions import retry_config, handle_tool_error

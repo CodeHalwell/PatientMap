@@ -12,7 +12,7 @@ src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
 from google.adk import Agent
-from google.adk.agents import LoopAgent, SequentialAgent, LlmAgent
+from google.adk.agents import LoopAgent, LlmAgent
 from google.adk.tools import google_search, url_context
 from patientmap.common.config import AgentConfig
 from patientmap.agents.knowledge_graph.agent import root_agent as kg_agent

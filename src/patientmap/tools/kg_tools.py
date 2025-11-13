@@ -612,7 +612,7 @@ def bulk_link_articles_to_conditions(
         result = bulk_add_relationships(relationships, tool_context)
         
         if errors:
-            result += f"\n\nWarnings encountered:\n"
+            result += "\n\nWarnings encountered:\n"
             for error in errors[:5]:
                 result += f"  - {error}\n"
             if len(errors) > 5:
@@ -620,7 +620,7 @@ def bulk_link_articles_to_conditions(
         
         return result
     else:
-        return f"No valid article-condition links created. Errors:\n" + "\n".join(errors)
+        return "No valid article-condition links created. Errors:\n" + "\n".join(errors)
 
 
 def add_clinical_trial(
@@ -1366,7 +1366,7 @@ def save_graph_to_disk(
     # 3. Save human-readable summary
     summary_path = output_dir / f"{base_name}_summary.txt"
     with open(summary_path, 'w', encoding='utf-8') as f:
-        f.write(f"Knowledge Graph Summary\n")
+        f.write("Knowledge Graph Summary\n")
         f.write(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*80}\n\n")
         
@@ -1379,7 +1379,7 @@ def save_graph_to_disk(
             f.write(f"ID: {patient_id}\n\n")
         
         # Statistics
-        f.write(f"STATISTICS:\n")
+        f.write("STATISTICS:\n")
         f.write(f"  Total Nodes: {graph.number_of_nodes()}\n")
         f.write(f"  Total Edges: {graph.number_of_edges()}\n\n")
         
@@ -1389,13 +1389,13 @@ def save_graph_to_disk(
             ntype = graph.nodes[node_id].get('node_type', 'unknown')
             node_types[ntype] = node_types.get(ntype, 0) + 1
         
-        f.write(f"NODES BY TYPE:\n")
+        f.write("NODES BY TYPE:\n")
         for ntype, count in sorted(node_types.items()):
             f.write(f"  {ntype}: {count}\n")
-        f.write(f"\n")
+        f.write("\n")
         
         # List all nodes with details
-        f.write(f"ALL NODES:\n")
+        f.write("ALL NODES:\n")
         f.write(f"{'-'*80}\n")
         for node_id in sorted(graph.nodes()):
             node_data = graph.nodes[node_id]
@@ -1410,21 +1410,21 @@ def save_graph_to_disk(
             out_edges = list(graph.out_edges(node_id, data=True))
             
             if in_edges:
-                f.write(f"  Incoming relationships:\n")
+                f.write("  Incoming relationships:\n")
                 for src, _, edge_data in in_edges:
                     src_label = graph.nodes[src].get('label', src)
                     rel_type = edge_data.get('relationship_type', 'UNKNOWN')
                     f.write(f"    <- {src_label} [{rel_type}]\n")
             
             if out_edges:
-                f.write(f"  Outgoing relationships:\n")
+                f.write("  Outgoing relationships:\n")
                 for _, tgt, edge_data in out_edges:
                     tgt_label = graph.nodes[tgt].get('label', tgt)
                     rel_type = edge_data.get('relationship_type', 'UNKNOWN')
                     f.write(f"    -> {tgt_label} [{rel_type}]\n")
         
         f.write(f"\n{'-'*80}\n")
-        f.write(f"End of Knowledge Graph Summary\n")
+        f.write("End of Knowledge Graph Summary\n")
     
     saved_files.append(str(summary_path))
     
@@ -1467,7 +1467,7 @@ def load_graph_from_disk(
         elif path.suffix == '.graphml':
             graph = nx.read_graphml(path)
         else:
-            return f"Error: Unsupported file format. Use .json or .graphml files."
+            return "Error: Unsupported file format. Use .json or .graphml files."
         
         _save_graph(graph, tool_context)
         

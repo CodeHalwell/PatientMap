@@ -11,7 +11,6 @@ import math
 from pathlib import Path
 import networkx as nx
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
 
 
 def load_graph(json_path: str) -> nx.DiGraph:

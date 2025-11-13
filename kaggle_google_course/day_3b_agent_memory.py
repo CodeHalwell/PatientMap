@@ -1,1 +1,860 @@
-{"metadata":{"kernelspec":{"name":"python3","display_name":"Python 3","language":"python"},"language_info":{"name":"python","version":"3.11.13","mimetype":"text/x-python","codemirror_mode":{"name":"ipython","version":3},"pygments_lexer":"ipython3","nbconvert_exporter":"python","file_extension":".py"},"kaggle":{"accelerator":"none","dataSources":[],"isInternetEnabled":true,"language":"python","sourceType":"script","isGpuEnabled":false}},"nbformat_minor":4,"nbformat":4,"cells":[{"cell_type":"code","source":"# %% [markdown]\n# ##### Copyright 2025 Google LLC.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:45:14.338245Z\",\"iopub.execute_input\":\"2025-11-12T15:45:14.338407Z\",\"iopub.status.idle\":\"2025-11-12T15:45:14.341749Z\",\"shell.execute_reply.started\":\"2025-11-12T15:45:14.338392Z\",\"shell.execute_reply\":\"2025-11-12T15:45:14.341028Z\"}}\n# @title Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n# https://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n# %% [markdown]\n# # 🧠 Memory Management - Part 2 - Memory\n# \n# **Welcome to Day 3 of the Kaggle 5-day Agents course!**\n# \n# In the previous notebook, you learned how **Sessions** manage conversation threads. Now you'll add **Memory** - a searchable, long-term knowledge store that persists across multiple conversations.\n# \n# ### What is Memory ❓\n# \n# Memory is a service that provides long-term knowledge storage for your agents. The key distinction:\n# \n# > **Session = Short-term memory** (single conversation)\n# > \n# > **Memory = Long-term knowledge** (across multiple conversations)\n# \n# Think of it in software engineering terms: **Session** is like application state (temporary), while **Memory** is like a database (persistent).\n\n# %% [markdown]\n# ### 🤔 Why Memory?\n# \n# Memory provides capabilities that Sessions alone cannot:\n# \n# | Capability | What It Means | Example |\n# |------------|---------------|---------|\n# | **Cross-Conversation Recall** | Access information from any past conversation | \"What preferences has this user mentioned across all chats?\" |\n# | **Intelligent Extraction** | LLM-powered consolidation extracts key facts | Stores \"allergic to peanuts\" instead of 50 raw messages |\n# | **Semantic Search** | Meaning-based retrieval, not just keyword matching | Query \"preferred hue\" matches \"favorite color is blue\" |\n# | **Persistent Storage** | Survives application restarts | Build knowledge that grows over time |\n# \n# **Example:** Imagine talking to a personal assistant:\n# - 🗣️ **Session**: They remember what you said 10 minutes ago in THIS conversation\n# - 🧠 **Memory**: They remember your preferences from conversations LAST WEEK\n\n# %% [markdown]\n# ### 🎯 What you'll learn:\n# \n# - ✅ Initialize MemoryService and integrate with your agent\n# - ✅ Transfer session data to memory storage\n# - ✅ Search and retrieve memories\n# - ✅ Automate memory storage and retrieval\n# - ✅ Understand memory consolidation (conceptual overview)\n# \n# #### 📝 Implementation Note\n# \n# > This notebook uses `InMemoryMemoryService` for learning - it performs keyword matching and doesn't persist data. \n# >\n# > For production applications, use **Vertex AI Memory Bank** (covered in Day 5), which provides LLM-powered consolidation and semantic search with persistent cloud storage.\n\n# %% [markdown]\n# ## ‼️ Please Read\n# \n# \n# > ❌ **ℹ️ Note: No submission required!**\n# > This notebook is for your hands-on practice and learning only. You **do not** need to submit it anywhere to complete the course.\n# \n# > ⏸️ **Note:**  When you first start the notebook via running a cell you might see a banner in the notebook header that reads **\"Waiting for the next available notebook\"**. The queue should drop rapidly; however, during peak bursts you might have to wait a few minutes.\n# \n# > ❌ **Note:** Avoid using the **Run all** cells command as this can trigger a QPM limit resulting in 429 errors when calling the backing model. Suggested flow is to run each cell in order - one at a time. [See FAQ on 429 errors for more information.](https://www.kaggle.com/code/kaggle5daysofai/day-0-troubleshooting-and-faqs)\n# \n# **For help: Ask questions on the [Kaggle Discord](https://discord.com/invite/kaggle) server.**\n\n# %% [markdown]\n# ---\n\n# %% [markdown]\n# ## 📖 Get started with Kaggle Notebooks\n# \n# If this is your first time using Kaggle Notebooks, welcome! You can learn more about using Kaggle Notebooks [in the documentation](https://www.kaggle.com/docs/notebooks).\n# \n# Here's how to get started:\n# \n# **1. Verify Your Account (Required)**\n# \n# To use the Kaggle Notebooks in this course, you'll need to verify your account with a phone number.\n# \n# You can do this in your [Kaggle settings](https://www.kaggle.com/settings).\n# \n# **2. Make Your Own Copy**\n# \n# To run any code in this notebook, you first need your own editable copy.\n# \n# Click the `Copy and Edit` button in the top-right corner.\n# \n# ![Copy and Edit button](https://storage.googleapis.com/kaggle-media/Images/5gdai_sc_1.png)\n# \n# This creates a private copy of the notebook just for you.\n# \n# **3. Run Code Cells**\n# \n# Once you have your copy, you can run code.\n# \n# Click the ▶️ Run button next to any code cell to execute it.\n# \n# ![Run cell button](https://storage.googleapis.com/kaggle-media/Images/5gdai_sc_2.png)\n# \n# Run the cells in order from top to bottom.\n# \n# **4. If You Get Stuck**\n# \n# To restart: Select `Factory reset` from the `Run` menu.\n# \n# For help: Ask questions on the [Kaggle Discord](https://discord.com/invite/kaggle) server.\n\n# %% [markdown]\n# ---\n# ## ⚙️ Section 1: Setup\n# \n# ### 1.1: Install dependencies\n# \n# The Kaggle Notebooks environment includes a pre-installed version of the [google-adk](https://google.github.io/adk-docs/) library for Python and its required dependencies, so you don't need to install additional packages in this notebook.\n# \n# To install and use ADK in your own Python development environment outside of this course, you can do so by running:\n# \n# ```\n# pip install google-adk\n# ```\n\n# %% [markdown]\n# ### 1.2: Configure your Gemini API Key\n# \n# This notebook uses the [Gemini API](https://ai.google.dev/gemini-api/docs), which requires authentication.\n# \n# **1. Get your API key**\n# \n# If you don't have one already, create an [API key in Google AI Studio](https://aistudio.google.com/app/api-keys).\n# \n# **2. Add the key to Kaggle Secrets**\n# \n# Next, you will need to add your API key to your Kaggle Notebook as a Kaggle User Secret.\n# \n# 1. In the top menu bar of the notebook editor, select `Add-ons` then `Secrets`.\n# 2. Create a new secret with the label `GOOGLE_API_KEY`.\n# 3. Paste your API key into the \"Value\" field and click \"Save\".\n# 4. Ensure that the checkbox next to `GOOGLE_API_KEY` is selected so that the secret is attached to the notebook.\n# \n# **3. Authenticate in the notebook**\n# \n# Run the cell below to complete authentication.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:45:14.342519Z\",\"iopub.execute_input\":\"2025-11-12T15:45:14.342797Z\",\"iopub.status.idle\":\"2025-11-12T15:45:14.597967Z\",\"shell.execute_reply.started\":\"2025-11-12T15:45:14.342779Z\",\"shell.execute_reply\":\"2025-11-12T15:45:14.596695Z\"}}\nimport os\nfrom kaggle_secrets import UserSecretsClient\n\ntry:\n    GOOGLE_API_KEY = UserSecretsClient().get_secret(\"GOOGLE_API_KEY\")\n    os.environ[\"GOOGLE_API_KEY\"] = GOOGLE_API_KEY\n    print(\"✅ Gemini API key setup complete.\")\nexcept Exception as e:\n    print(\n        f\"🔑 Authentication Error: Please make sure you have added 'GOOGLE_API_KEY' to your Kaggle secrets. Details: {e}\"\n    )\n\n# %% [markdown]\n# ### 1.3: Import ADK components\n# \n# Now, import the specific components you'll need from the Agent Development Kit and the Generative AI library. This keeps your code organized and ensures we have access to the necessary building blocks.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:45:16.969081Z\",\"iopub.execute_input\":\"2025-11-12T15:45:16.969397Z\",\"iopub.status.idle\":\"2025-11-12T15:45:56.798422Z\",\"shell.execute_reply.started\":\"2025-11-12T15:45:16.969371Z\",\"shell.execute_reply\":\"2025-11-12T15:45:56.797403Z\"}}\nfrom google.adk.agents import LlmAgent\nfrom google.adk.models.google_llm import Gemini\nfrom google.adk.runners import Runner\nfrom google.adk.sessions import InMemorySessionService\nfrom google.adk.memory import InMemoryMemoryService\nfrom google.adk.tools import load_memory, preload_memory\nfrom google.genai import types\n\nprint(\"✅ ADK components imported successfully.\")\n\n# %% [markdown]\n# ### 1.4: Helper functions\n# \n# This helper function manages a complete conversation session, handling session creation/retrieval, query processing, and response streaming.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:48:55.282387Z\",\"iopub.execute_input\":\"2025-11-12T15:48:55.283655Z\",\"iopub.status.idle\":\"2025-11-12T15:48:55.290892Z\",\"shell.execute_reply.started\":\"2025-11-12T15:48:55.283633Z\",\"shell.execute_reply\":\"2025-11-12T15:48:55.290080Z\"}}\nasync def run_session(\n    runner_instance: Runner, user_queries: list[str] | str, session_id: str = \"default\"\n):\n    \"\"\"Helper function to run queries in a session and display responses.\"\"\"\n    print(f\"\\n### Session: {session_id}\")\n\n    # Create or retrieve session\n    try:\n        session = await session_service.create_session(\n            app_name=APP_NAME, user_id=USER_ID, session_id=session_id\n        )\n    except:\n        session = await session_service.get_session(\n            app_name=APP_NAME, user_id=USER_ID, session_id=session_id\n        )\n\n    # Convert single query to list\n    if isinstance(user_queries, str):\n        user_queries = [user_queries]\n\n    # Process each query\n    for query in user_queries:\n        print(f\"\\nUser > {query}\")\n        query_content = types.Content(role=\"user\", parts=[types.Part(text=query)])\n\n        # Stream agent response\n        async for event in runner_instance.run_async(\n            user_id=USER_ID, session_id=session.id, new_message=query_content\n        ):\n            if event.is_final_response() and event.content and event.content.parts:\n                text = event.content.parts[0].text\n                if text and text != \"None\":\n                    print(f\"Model: > {text}\")\n\n\nprint(\"✅ Helper functions defined.\")\n\n# %% [markdown]\n# ### 1.5: Configure Retry Options\n# \n# When working with LLMs, you may encounter transient errors like rate limits or temporary service unavailability. Retry options automatically handle these failures by retrying the request with exponential backoff.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:48:58.118094Z\",\"iopub.execute_input\":\"2025-11-12T15:48:58.118379Z\",\"iopub.status.idle\":\"2025-11-12T15:48:58.123235Z\",\"shell.execute_reply.started\":\"2025-11-12T15:48:58.118359Z\",\"shell.execute_reply\":\"2025-11-12T15:48:58.122222Z\"}}\nretry_config = types.HttpRetryOptions(\n    attempts=5,  # Maximum retry attempts\n    exp_base=7,  # Delay multiplier\n    initial_delay=1,\n    http_status_codes=[429, 500, 503, 504],  # Retry on these HTTP errors\n)\n\n# %% [markdown]\n# ---\n# ## 🤓 Section 2: Memory Workflow\n# \n# From the Introduction section, you now know why we need Memory. In order to integrate Memory into your Agents, there are **three high-level steps.**\n# \n# **Three-step integration process:**\n# \n# 1. **Initialize** → Create a `MemoryService` and provide it to your agent via the `Runner`\n# 2. **Ingest** → Transfer session data to memory using `add_session_to_memory()`\n# 3. **Retrieve** → Search stored memories using `search_memory()`\n# \n# Let's explore each step in the following sections.\n\n# %% [markdown]\n# <img src=\"https://storage.googleapis.com/github-repo/kaggle-5days-ai/day3/memory-workflow.png\" width=\"1400\" alt=\"Memory workflow\">\n\n# %% [markdown]\n# ---\n# ## 🧠 Section 3: Initialize MemoryService\n\n# %% [markdown]\n# ### 3.1 Initialize Memory\n# \n# ADK provides multiple `MemoryService` implementations through the `BaseMemoryService` interface:\n# \n# - **`InMemoryMemoryService`** - Built-in service for prototyping and testing (keyword matching, no persistence)\n# - **`VertexAiMemoryBankService`** - Managed cloud service with LLM-powered consolidation and semantic search\n# - **Custom implementations** - You can build your own using databases, though managed services are recommended\n# \n# For this notebook, we'll use `InMemoryMemoryService` to learn the core mechanics. The same methods work identically with production-ready services like Vertex AI Memory Bank.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:49:33.294884Z\",\"iopub.execute_input\":\"2025-11-12T15:49:33.295640Z\",\"iopub.status.idle\":\"2025-11-12T15:49:33.299392Z\",\"shell.execute_reply.started\":\"2025-11-12T15:49:33.295605Z\",\"shell.execute_reply\":\"2025-11-12T15:49:33.298527Z\"}}\nmemory_service = (\n    InMemoryMemoryService()\n)  # ADK's built-in Memory Service for development and testing\n\n# %% [markdown]\n# ### 3.2 Add Memory to Agent\n# \n# Next, create a simple agent to answer user queries.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:49:41.446803Z\",\"iopub.execute_input\":\"2025-11-12T15:49:41.447095Z\",\"iopub.status.idle\":\"2025-11-12T15:49:41.452505Z\",\"shell.execute_reply.started\":\"2025-11-12T15:49:41.447072Z\",\"shell.execute_reply\":\"2025-11-12T15:49:41.451802Z\"}}\n# Define constants used throughout the notebook\nAPP_NAME = \"MemoryDemoApp\"\nUSER_ID = \"demo_user\"\n\n# Create agent\nuser_agent = LlmAgent(\n    model=Gemini(model=\"gemini-2.5-flash-lite\", retry_options=retry_config),\n    name=\"MemoryDemoAgent\",\n    instruction=\"Answer user questions in simple words.\",\n)\n\nprint(\"✅ Agent created\")\n\n# %% [markdown]\n# #### **Create Runner**\n# \n# Now provide both Session and Memory services to the `Runner`.\n# \n# **Key configuration:**\n# \n# The `Runner` requires both services to enable memory functionality:\n# - **`session_service`** → Manages conversation threads and events\n# - **`memory_service`** → Provides long-term knowledge storage\n# \n# Both services work together: Sessions capture conversations, Memory stores knowledge for retrieval across sessions.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:50:17.959398Z\",\"iopub.execute_input\":\"2025-11-12T15:50:17.959639Z\",\"iopub.status.idle\":\"2025-11-12T15:50:17.966411Z\",\"shell.execute_reply.started\":\"2025-11-12T15:50:17.959625Z\",\"shell.execute_reply\":\"2025-11-12T15:50:17.965537Z\"}}\n# Create Session Service\nsession_service = InMemorySessionService()  # Handles conversations\n\n# Create runner with BOTH services\nrunner = Runner(\n    agent=user_agent,\n    app_name=\"MemoryDemoApp\",\n    session_service=session_service,\n    memory_service=memory_service,  # Memory service is now available!\n)\n\nprint(\"✅ Agent and Runner created with memory support!\")\n\n# %% [markdown]\n# ### ‼️ Important\n# \n# **💡 Configuration vs. Usage:** Adding `memory_service` to the `Runner` makes memory *available* to your agent, but doesn't automatically use it. You must explicitly:\n# 1. **Ingest data** using `add_session_to_memory()` \n# 2. **Enable retrieval** by giving your agent memory tools (`load_memory` or `preload_memory`)\n# \n# Let's learn these steps next!\n\n# %% [markdown]\n# ### 3.3 MemoryService Implementation Options\n# \n# **This notebook: `InMemoryMemoryService`**\n# - Stores raw conversation events without consolidation\n# - Keyword-based search (simple word matching)\n# - In-memory storage (resets on restart)\n# - Ideal for learning and local development\n# \n# **Production: `VertexAiMemoryBankService` (You'll learn this on Day 5)**\n# - LLM-powered extraction of key facts\n# - Semantic search (meaning-based retrieval)\n# - Persistent cloud storage\n# - Integrates external knowledge sources\n# \n# **💡 API Consistency:** Both implementations use identical methods (`add_session_to_memory()`, `search_memory()`). The workflow you learn here applies to all memory services!\n\n# %% [markdown]\n# ---\n# ## 💾 Section 4: Ingest Session Data into Memory\n\n# %% [markdown]\n# **Why should you transfer Session data to Memory?**\n# \n# Now that memory is initialized, you need to populate it with knowledge. When you initialize a MemoryService, it starts completely empty. All your conversations are stored in Sessions, which contain raw events including every message, tool call, and metadata. To make this information available for long-term recall, you explicitly transfer it to memory using `add_session_to_memory()`.\n# \n# Here's where managed memory services like Vertex AI Memory Bank shine. **During transfer, they perform intelligent consolidation - extracting key facts while discarding conversational noise.** The `InMemoryMemoryService` we're using stores everything without consolidation, which is sufficient for learning the mechanics.\n\n# %% [markdown]\n# Before we can transfer anything, we need data. Let's have a conversation with our agent to populate the session. This conversation will be stored in the SessionService just like you learned in the previous notebook.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:50:50.480619Z\",\"iopub.execute_input\":\"2025-11-12T15:50:50.480904Z\",\"iopub.status.idle\":\"2025-11-12T15:50:51.709266Z\",\"shell.execute_reply.started\":\"2025-11-12T15:50:50.480884Z\",\"shell.execute_reply\":\"2025-11-12T15:50:51.707905Z\"}}\n# User tells agent about their favorite color\nawait run_session(\n    runner,\n    \"My favorite color is blue-green. Can you write a Haiku about it?\",\n    \"conversation-01\",  # Session ID\n)\n\n# %% [markdown]\n# Let's verify the conversation was captured in the session. You should see the session events containing both the user's prompt and the model's response.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:51:10.269325Z\",\"iopub.execute_input\":\"2025-11-12T15:51:10.269603Z\",\"iopub.status.idle\":\"2025-11-12T15:51:10.274820Z\",\"shell.execute_reply.started\":\"2025-11-12T15:51:10.269579Z\",\"shell.execute_reply\":\"2025-11-12T15:51:10.273825Z\"}}\nsession = await session_service.get_session(\n    app_name=APP_NAME, user_id=USER_ID, session_id=\"conversation-01\"\n)\n\n# Let's see what's in the session\nprint(\"📝 Session contains:\")\nfor event in session.events:\n    text = (\n        event.content.parts[0].text[:60]\n        if event.content and event.content.parts\n        else \"(empty)\"\n    )\n    print(f\"  {event.content.role}: {text}...\")\n\n# %% [markdown]\n# Perfect! The session contains our conversation. Now we're ready to transfer it to memory. Call `add_session_to_memory()` and pass the session object. This ingests the conversation into the memory store, making it available for future searches.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:51:14.770864Z\",\"iopub.execute_input\":\"2025-11-12T15:51:14.771179Z\",\"iopub.status.idle\":\"2025-11-12T15:51:14.776675Z\",\"shell.execute_reply.started\":\"2025-11-12T15:51:14.771161Z\",\"shell.execute_reply\":\"2025-11-12T15:51:14.775641Z\"}}\n# This is the key method!\nawait memory_service.add_session_to_memory(session)\n\nprint(\"✅ Session added to memory!\")\n\n# %% [markdown]\n# ---\n# ## 🔎 Section 5: Enable Memory Retrieval in Your Agent\n# \n# You've successfully transferred session data to memory, but there's one crucial step remaining. **Agents can't directly access the MemoryService - they need tools to search it.** \n# \n# This is by design: it gives you control over when and how memory is retrieved.\n\n# %% [markdown]\n# ### 5.1 Memory Retrieval in ADK\n# \n# ADK provides two built-in tools for memory retrieval:\n# \n# **`load_memory` (Reactive)**\n# - Agent decides when to search memory\n# - Only retrieves when the agent thinks it's needed\n# - More efficient (saves tokens)\n# - Risk: Agent might forget to search\n# \n# **`preload_memory` (Proactive)**\n# - Automatically searches before every turn\n# - Memory always available to the agent\n# - Guaranteed context, but less efficient\n# - Searches even when not needed\n# \n# Think of it like studying for an exam: `load_memory` is looking things up only when you need them, while `preload_memory` is reading all your notes before answering each question.\n\n# %% [markdown]\n# ### 5.2 Add Load Memory Tool to Agent\n# \n# Let's start by implementing the reactive pattern. We'll recreate the agent from Section 3, this time adding the `load_memory` tool to its toolkit. Since this is a built-in ADK tool, you simply include it in the tools array without any custom implementation.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:51:54.890198Z\",\"iopub.execute_input\":\"2025-11-12T15:51:54.890471Z\",\"iopub.status.idle\":\"2025-11-12T15:51:54.895228Z\",\"shell.execute_reply.started\":\"2025-11-12T15:51:54.890452Z\",\"shell.execute_reply\":\"2025-11-12T15:51:54.894388Z\"}}\n# Create agent\nuser_agent = LlmAgent(\n    model=Gemini(model=\"gemini-2.5-flash-lite\", retry_options=retry_config),\n    name=\"MemoryDemoAgent\",\n    instruction=\"Answer user questions in simple words. Use load_memory tool if you need to recall past conversations.\",\n    tools=[\n        load_memory\n    ],  # Agent now has access to Memory and can search it whenever it decides to!\n)\n\nprint(\"✅ Agent with load_memory tool created.\")\n\n# %% [markdown]\n# ### 5.3 Update the Runner and Test\n# \n# Let's now update the Runner to use our new `user_agent` that has the `load_memory` tool. And we'll ask the Agent about the favorite color which we had stored previously in another session.\n# \n# **👉 Since sessions don't share conversation history, the only way the agent can answer correctly is by using the `load_memory` tool** to retrieve the information from long-term memory that we manually stored.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:51:59.185737Z\",\"iopub.execute_input\":\"2025-11-12T15:51:59.185981Z\",\"iopub.status.idle\":\"2025-11-12T15:52:00.756437Z\",\"shell.execute_reply.started\":\"2025-11-12T15:51:59.185963Z\",\"shell.execute_reply\":\"2025-11-12T15:52:00.754901Z\"}}\n# Create a new runner with the updated agent\nrunner = Runner(\n    agent=user_agent,\n    app_name=APP_NAME,\n    session_service=session_service,\n    memory_service=memory_service,\n)\n\nawait run_session(runner, \"What is my favorite color?\", \"color-test\")\n\n# %% [markdown]\n# ### 5.4 Complete Manual Workflow Test\n# \n# Let's see the complete workflow in action. We'll have a conversation about a birthday, manually save it to memory, then test retrieval in a new session. This demonstrates the full cycle: **ingest → store → retrieve**.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:52:08.954650Z\",\"iopub.execute_input\":\"2025-11-12T15:52:08.954912Z\",\"iopub.status.idle\":\"2025-11-12T15:52:09.489450Z\",\"shell.execute_reply.started\":\"2025-11-12T15:52:08.954890Z\",\"shell.execute_reply\":\"2025-11-12T15:52:09.488410Z\"}}\nawait run_session(runner, \"My birthday is on March 15th.\", \"birthday-session-01\")\n\n# %% [markdown]\n# Now manually save this session to memory. This is the crucial step that transfers the conversation from short-term session storage to long-term memory storage.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:52:17.874138Z\",\"iopub.execute_input\":\"2025-11-12T15:52:17.874500Z\",\"iopub.status.idle\":\"2025-11-12T15:52:17.880595Z\",\"shell.execute_reply.started\":\"2025-11-12T15:52:17.874478Z\",\"shell.execute_reply\":\"2025-11-12T15:52:17.879819Z\"}}\n# Manually save the session to memory\nbirthday_session = await session_service.get_session(\n    app_name=APP_NAME, user_id=USER_ID, session_id=\"birthday-session-01\"\n)\n\nawait memory_service.add_session_to_memory(birthday_session)\n\nprint(\"✅ Birthday session saved to memory!\")\n\n# %% [markdown]\n# Here's the crucial test: we'll start a completely new session with a different session ID and ask the agent to recall the birthday.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:52:26.394648Z\",\"iopub.execute_input\":\"2025-11-12T15:52:26.394938Z\",\"iopub.status.idle\":\"2025-11-12T15:52:27.533615Z\",\"shell.execute_reply.started\":\"2025-11-12T15:52:26.394917Z\",\"shell.execute_reply\":\"2025-11-12T15:52:27.532528Z\"}}\n# Test retrieval in a NEW session\nawait run_session(\n    runner, \"When is my birthday?\", \"birthday-session-02\"  # Different session ID\n)\n\n# %% [markdown]\n# **What happens:**\n# \n# 1. Agent receives: \"When is my birthday?\"\n# 2. Agent recognizes: This requires past conversation context\n# 3. Agent calls: `load_memory(\"birthday\")`\n# 4. Memory returns: Previous conversation containing \"March 15th\"\n# 5. Agent responds: \"Your birthday is on March 15th\"\n# \n# The memory retrieval worked even though this is a completely different session!\n\n# %% [markdown]\n# #### 🚀 Your Turn: Experiment with Both Patterns\n# \n# Try swapping `load_memory` with `preload_memory` by changing the tools array to `tools=[preload_memory]`.\n# \n# **What changes:**\n# - `load_memory` (reactive): Agent decides when to search\n# - `preload_memory` (proactive): Automatically loads memory before every turn\n# \n# **Test it:**\n# 1. Ask \"What is my favorite color?\" in a new session\n# 2. Ask \"Tell me a joke\" - notice that `preload_memory` still searches memory even though it's unnecessary\n# 3. Which pattern is better for different use cases?\n\n# %% [markdown]\n# ### 5.5 Manual Memory Search\n# \n# Beyond agent tools, you can also search memories directly in your code. This is useful for:\n# - Debugging memory contents\n# - Building analytics dashboards  \n# - Creating custom memory management UIs\n# \n# The `search_memory()` method takes a text query and returns a `SearchMemoryResponse` with matching memories.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:53:01.243829Z\",\"iopub.execute_input\":\"2025-11-12T15:53:01.244127Z\",\"iopub.status.idle\":\"2025-11-12T15:53:01.250267Z\",\"shell.execute_reply.started\":\"2025-11-12T15:53:01.244111Z\",\"shell.execute_reply\":\"2025-11-12T15:53:01.249334Z\"}}\n# Search for color preferences\nsearch_response = await memory_service.search_memory(\n    app_name=APP_NAME, user_id=USER_ID, query=\"What is the user's favorite color?\"\n)\n\nprint(\"🔍 Search Results:\")\nprint(f\"  Found {len(search_response.memories)} relevant memories\")\nprint()\n\nfor memory in search_response.memories:\n    if memory.content and memory.content.parts:\n        text = memory.content.parts[0].text[:80]\n        print(f\"  [{memory.author}]: {text}...\")\n\n# %% [markdown]\n# #### **🚀 Your Turn: Test Different Queries**\n# \n# Try these searches to understand how keyword matching works with `InMemoryMemoryService`:\n# \n# 1. **\"what color does the user like\"**\n# 2. **\"haiku\"**\n# 3. **\"age\"**\n# 4. **\"preferred hue\"**\n# \n# Notice which queries return results and which don't. What pattern do you observe?\n# \n# **💡 Key Insight:** Memory search is grounded in reality - agents can't hallucinate memories that don't exist.\n\n# %% [markdown]\n# ### 5.6 How Search Works\n# \n# **InMemoryMemoryService (this notebook):**\n# - **Method:** Keyword matching\n# - **Example:** \"favorite color\" matches because those exact words exist\n# - **Limitation:** \"preferred hue\" won't match\n# \n# **VertexAiMemoryBankService (Day 5):**\n# - **Method:** Semantic search via embeddings\n# - **Example:** \"preferred hue\" WILL match \"favorite color\"\n# - **Advantage:** Understands meaning, not just keywords\n# \n# You'll explore semantic search in Day 5!\n\n# %% [markdown]\n# ---\n# ## 🤖 Section 6: Automating Memory Storage\n\n# %% [markdown]\n# So far, we've **manually** called `add_session_to_memory()` to transfer data to long-term storage. Production systems need this to happen **automatically**.\n\n# %% [markdown]\n# ### 6.1 Callbacks\n# \n# ADK's callback system lets you hook into key execution moments. Callbacks are **Python functions** you define and attach to agents - ADK automatically calls them at specific stages, acting like checkpoints during the agent's execution flow.\n# \n# **Think of callbacks as event listeners in your agent's lifecycle.** When an agent processes a request, it goes through multiple stages: receiving the input, calling the LLM, invoking tools, and generating the response. Callbacks let you insert custom logic at each of these stages without modifying the core agent code.\n# \n# **Available callback types:**\n# \n# - `before_agent_callback` → Runs before agent starts processing a request\n# - `after_agent_callback` → Runs after agent completes its turn  \n# - `before_tool_callback` / `after_tool_callback` → Around tool invocations\n# - `before_model_callback` / `after_model_callback` → Around LLM calls\n# - `on_model_error_callback` → When errors occur\n# \n# **Common use cases:**\n# \n# - Logging and observability (track what the agent does)\n# - Automatic data persistence (like saving to memory)\n# - Custom validation or filtering\n# - Performance monitoring\n# \n# **📚 Learn More:** [ADK Callbacks Documentation](https://google.github.io/adk-docs/agents/callbacks/)\n\n# %% [markdown]\n# ![image.png](https://storage.googleapis.com/github-repo/kaggle-5days-ai/day4/types_of_callbacks.png)\n\n# %% [markdown]\n# ### 6.2 Automatic Memory Storage with Callbacks\n# \n# For automatic memory storage, we'll use `after_agent_callback`. This function triggers every time the agent finishes a turn, then calls `add_session_to_memory()` to persist the conversation automatically.\n# \n# But here's the challenge: how does our callback function actually access the memory service and current session? That's where `callback_context` comes in.\n# \n# When you define a callback function, ADK automatically passes a special parameter called `callback_context` to it. The `callback_context` provides access to the Memory Service and other runtime components.\n# \n# **How we'll use it:** In our callback, we'll access the memory service and current session to automatically save conversation data after each turn.\n# \n# **💡 Important:** You don't create this context - ADK creates it and passes it to your callback automatically when the callback runs.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:54:42.813840Z\",\"iopub.execute_input\":\"2025-11-12T15:54:42.814188Z\",\"iopub.status.idle\":\"2025-11-12T15:54:42.820060Z\",\"shell.execute_reply.started\":\"2025-11-12T15:54:42.814166Z\",\"shell.execute_reply\":\"2025-11-12T15:54:42.818683Z\"}}\nasync def auto_save_to_memory(callback_context):\n    \"\"\"Automatically save session to memory after each agent turn.\"\"\"\n    await callback_context._invocation_context.memory_service.add_session_to_memory(\n        callback_context._invocation_context.session\n    )\n\n\nprint(\"✅ Callback created.\")\n\n# %% [markdown]\n# ### 6.3 Create an Agent: Callback and PreLoad Memory Tool\n# \n# Now create an agent that combines:\n# - **Automatic storage:** `after_agent_callback` saves conversations\n# - **Automatic retrieval:** `preload_memory` loads memories\n# \n# This creates a fully automated memory system with zero manual intervention.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:54:50.397925Z\",\"iopub.execute_input\":\"2025-11-12T15:54:50.398219Z\",\"iopub.status.idle\":\"2025-11-12T15:54:50.403897Z\",\"shell.execute_reply.started\":\"2025-11-12T15:54:50.398203Z\",\"shell.execute_reply\":\"2025-11-12T15:54:50.402861Z\"}}\n# Agent with automatic memory saving\nauto_memory_agent = LlmAgent(\n    model=Gemini(model=\"gemini-2.5-flash-lite\", retry_options=retry_config),\n    name=\"AutoMemoryAgent\",\n    instruction=\"Answer user questions.\",\n    tools=[preload_memory],\n    after_agent_callback=auto_save_to_memory,  # Saves after each turn!\n)\n\nprint(\"✅ Agent created with automatic memory saving!\")\n\n# %% [markdown]\n# **What happens automatically:**\n# \n# - After every agent response → callback triggers\n# - Session data → transferred to memory\n# - No manual `add_session_to_memory()` calls needed\n# \n# The framework handles everything!\n\n# %% [markdown]\n# ### 6.4 Create a Runner and Test The Agent\n# \n# Time to test! Create a Runner with the auto-memory agent, connecting the session and memory services.\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:54:59.662379Z\",\"iopub.execute_input\":\"2025-11-12T15:54:59.662670Z\",\"iopub.status.idle\":\"2025-11-12T15:54:59.667948Z\",\"shell.execute_reply.started\":\"2025-11-12T15:54:59.662651Z\",\"shell.execute_reply\":\"2025-11-12T15:54:59.667199Z\"}}\n# Create a runner for the auto-save agent\n# This connects our automated agent to the session and memory services\nauto_runner = Runner(\n    agent=auto_memory_agent,  # Use the agent with callback + preload_memory\n    app_name=APP_NAME,\n    session_service=session_service,  # Same services from Section 3\n    memory_service=memory_service,\n)\n\nprint(\"✅ Runner created.\")\n\n# %% [code] {\"execution\":{\"iopub.status.busy\":\"2025-11-12T15:55:01.925723Z\",\"iopub.execute_input\":\"2025-11-12T15:55:01.925984Z\",\"iopub.status.idle\":\"2025-11-12T15:55:03.440320Z\",\"shell.execute_reply.started\":\"2025-11-12T15:55:01.925967Z\",\"shell.execute_reply\":\"2025-11-12T15:55:03.439558Z\"}}\n# Test 1: Tell the agent about a gift (first conversation)\n# The callback will automatically save this to memory when the turn completes\nawait run_session(\n    auto_runner,\n    \"I gifted a new toy to my nephew on his 1st birthday!\",\n    \"auto-save-test\",\n)\n\n# Test 2: Ask about the gift in a NEW session (second conversation)\n# The agent should retrieve the memory using preload_memory and answer correctly\nawait run_session(\n    auto_runner,\n    \"What did I gift my nephew?\",\n    \"auto-save-test-2\",  # Different session ID - proves memory works across sessions!\n)\n\n# %% [markdown]\n# **What just happened:**\n# \n# 1. **First conversation:** Mentioned gift to nephew\n#    - Callback automatically saved to memory ✅\n# 2. **Second conversation (new session):** Asked about the gift  \n#    - `preload_memory` automatically retrieved the memory ✅\n#    - Agent answered correctly ✅\n# \n# **Zero manual memory calls!** This is automated memory management in action.\n\n# %% [markdown]\n# ### 6.5 How often should you save Sessions to Memory?\n# \n# **Options:**\n# \n# | Timing | Implementation | Best For |\n# |--------|----------------|----------|\n# | **After every turn** | `after_agent_callback` | Real-time memory updates |\n# | **End of conversation** | Manual call when session ends | Batch processing, reduce API calls |\n# | **Periodic intervals** | Timer-based background job | Long-running conversations |\n\n# %% [markdown]\n# ---\n# ## 🧩 Section 7: Memory Consolidation\n\n# %% [markdown]\n# ### 7.1 The Limitation of Raw Storage\n# \n# **What we've stored so far:**\n# - Every user message\n# - Every agent response  \n# - Every tool call\n# \n# **The problem:**\n# ```\n# Session: 50 messages = 10,000 tokens\n# Memory:  All 50 messages stored\n# Search:  Returns all 50 messages → Agent must process 10,000 tokens\n# ```\n# \n# This doesn't scale. We need **consolidation**.\n\n# %% [markdown]\n# ### 7.2 What is Memory Consolidation?\n# \n# **Memory Consolidation** = Extracting **only important facts** while discarding conversational noise.\n# \n# **Before (Raw Storage):**\n# \n# ```\n# User: \"My favorite color is BlueGreen. I also like purple. \n#        Actually, I prefer BlueGreen most of the time.\"\n# Agent: \"Great! I'll remember that.\"\n# User: \"Thanks!\"\n# Agent: \"You're welcome!\"\n# \n# → Stores ALL 4 messages (redundant, verbose)\n# ```\n# \n# **After (Consolidation):**\n# \n# ```\n# Extracted Memory: \"User's favorite color: BlueGreen\"\n# \n# → Stores 1 concise fact\n# ```\n# \n# **Benefits:** Less storage, faster retrieval, more accurate answers.\n\n# %% [markdown]\n# <img src=\"https://storage.googleapis.com/github-repo/kaggle-5days-ai/day3/memory-consolidation.png\" width=\"1400\" alt=\"Memory consolidation\">\n\n# %% [markdown]\n# ### 7.3 How Consolidation Works (Conceptual)\n# \n# **The pipeline:**\n# \n# ```\n# 1. Raw Session Events\n#    ↓\n# 2. LLM analyzes conversation\n#    ↓\n# 3. Extracts key facts\n#    ↓\n# 4. Stores concise memories\n#    ↓\n# 5. Merges with existing memories (deduplication)\n# ```\n# \n# **Example transformation:**\n# \n# ```\n# Input:  \"I'm allergic to peanuts. I can't eat anything with nuts.\"\n# \n# Output: Memory {\n#   allergy: \"peanuts, tree nuts\"\n#   severity: \"avoid completely\"\n# }\n# ```\n# \n# Natural language → Structured, actionable data.\n\n# %% [markdown]\n# ### 7.4 Next Steps for Memory Consolidation\n# \n# **💡 Key Point:** Managed Memory Services handle consolidation **automatically**. \n# \n# **You use the same API:**\n# - `add_session_to_memory()` ← Same method\n# - `search_memory()` ← Same method\n# \n# **The difference:** What happens behind the scenes.\n# - **InMemoryMemoryService:** Stores raw events\n# - **VertexAiMemoryBankService:** Intelligently consolidates before storing\n# \n# **📚 Learn More:**\n# - [Vertex AI Memory Bank: Memory Consolidation Guide](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/generate-memories) -> You'll explore this in Day 5!\n# \n\n# %% [markdown]\n# ---\n# ## 📊 Summary\n\n# %% [markdown]\n# You've learned the **core mechanics** of Memory in ADK:\n# \n# 1. **✅ Adding Memory**\n#    - Initialize `MemoryService` alongside `SessionService`\n#    - Both services are provided to the `Runner`\n# \n# 2. **✅ Storing Information**\n#    - `await memory_service.add_session_to_memory(session)`\n#    - Transfers session data to long-term storage\n#    - Can be automated with callbacks\n# \n# 3. **✅ Searching Memory**\n#    - `await memory_service.search_memory(app_name, user_id, query)`\n#    - Returns relevant memories from past conversations\n# \n# 4. **✅ Retrieving in Agents**\n#    - **Reactive:** `load_memory` tool (agent decides when to use memory)\n#    - **Proactive:** `preload_memory` tool (always loads memory into LLM's system instructions)\n# \n# 5. **✅ Memory Consolidation**\n#    - Extracts key information from Session data\n#    - Provided by managed memory services such as Vertex AI Memory Bank\n\n# %% [markdown]\n# ## 🎉 **Congratulations!** You've learned Memory Management in ADK!\n\n# %% [markdown]\n# **📚 Learn More:**\n# - [ADK Memory Documentation](https://google.github.io/adk-docs/sessions/memory/)\n# - [Vertex AI Memory Bank](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/overview)\n# - [Memory Consolidation Guide](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/generate-memories)\n# \n# **🎯 Next Steps:**\n# \n# Ready for Day 4? Learn how to **implement Observability and Evaluate your agents** to ensure they're working as intended in production!\n\n# %% [markdown]\n# ---\n# \n# ## Authors\n# \n# | Authors |\n# | --- |\n# | [Sampath M](https://www.linkedin.com/in/msampathkumar/) |","metadata":{"_uuid":"9b5f3f05-69ec-4c31-b9c9-71a386c07d60","_cell_guid":"48e0e7ff-b861-4c66-9c91-46d9e699f77f","trusted":true,"collapsed":false,"jupyter":{"outputs_hidden":false}},"outputs":[],"execution_count":null}]}
+# %% [markdown]
+# ##### Copyright 2025 Google LLC.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:45:14.338245Z","iopub.execute_input":"2025-11-12T15:45:14.338407Z","iopub.status.idle":"2025-11-12T15:45:14.341749Z","shell.execute_reply.started":"2025-11-12T15:45:14.338392Z","shell.execute_reply":"2025-11-12T15:45:14.341028Z"}}
+# @title Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# %% [markdown]
+# # 🧠 Memory Management - Part 2 - Memory
+# 
+# **Welcome to Day 3 of the Kaggle 5-day Agents course!**
+# 
+# In the previous notebook, you learned how **Sessions** manage conversation threads. Now you'll add **Memory** - a searchable, long-term knowledge store that persists across multiple conversations.
+# 
+# ### What is Memory ❓
+# 
+# Memory is a service that provides long-term knowledge storage for your agents. The key distinction:
+# 
+# > **Session = Short-term memory** (single conversation)
+# > 
+# > **Memory = Long-term knowledge** (across multiple conversations)
+# 
+# Think of it in software engineering terms: **Session** is like application state (temporary), while **Memory** is like a database (persistent).
+
+# %% [markdown]
+# ### 🤔 Why Memory?
+# 
+# Memory provides capabilities that Sessions alone cannot:
+# 
+# | Capability | What It Means | Example |
+# |------------|---------------|---------|
+# | **Cross-Conversation Recall** | Access information from any past conversation | "What preferences has this user mentioned across all chats?" |
+# | **Intelligent Extraction** | LLM-powered consolidation extracts key facts | Stores "allergic to peanuts" instead of 50 raw messages |
+# | **Semantic Search** | Meaning-based retrieval, not just keyword matching | Query "preferred hue" matches "favorite color is blue" |
+# | **Persistent Storage** | Survives application restarts | Build knowledge that grows over time |
+# 
+# **Example:** Imagine talking to a personal assistant:
+# - 🗣️ **Session**: They remember what you said 10 minutes ago in THIS conversation
+# - 🧠 **Memory**: They remember your preferences from conversations LAST WEEK
+
+# %% [markdown]
+# ### 🎯 What you'll learn:
+# 
+# - ✅ Initialize MemoryService and integrate with your agent
+# - ✅ Transfer session data to memory storage
+# - ✅ Search and retrieve memories
+# - ✅ Automate memory storage and retrieval
+# - ✅ Understand memory consolidation (conceptual overview)
+# 
+# #### 📝 Implementation Note
+# 
+# > This notebook uses `InMemoryMemoryService` for learning - it performs keyword matching and doesn't persist data. 
+# >
+# > For production applications, use **Vertex AI Memory Bank** (covered in Day 5), which provides LLM-powered consolidation and semantic search with persistent cloud storage.
+
+# %% [markdown]
+# ## ‼️ Please Read
+# 
+# 
+# > ❌ **ℹ️ Note: No submission required!**
+# > This notebook is for your hands-on practice and learning only. You **do not** need to submit it anywhere to complete the course.
+# 
+# > ⏸️ **Note:**  When you first start the notebook via running a cell you might see a banner in the notebook header that reads **"Waiting for the next available notebook"**. The queue should drop rapidly; however, during peak bursts you might have to wait a few minutes.
+# 
+# > ❌ **Note:** Avoid using the **Run all** cells command as this can trigger a QPM limit resulting in 429 errors when calling the backing model. Suggested flow is to run each cell in order - one at a time. [See FAQ on 429 errors for more information.](https://www.kaggle.com/code/kaggle5daysofai/day-0-troubleshooting-and-faqs)
+# 
+# **For help: Ask questions on the [Kaggle Discord](https://discord.com/invite/kaggle) server.**
+
+# %% [markdown]
+# ---
+
+# %% [markdown]
+# ## 📖 Get started with Kaggle Notebooks
+# 
+# If this is your first time using Kaggle Notebooks, welcome! You can learn more about using Kaggle Notebooks [in the documentation](https://www.kaggle.com/docs/notebooks).
+# 
+# Here's how to get started:
+# 
+# **1. Verify Your Account (Required)**
+# 
+# To use the Kaggle Notebooks in this course, you'll need to verify your account with a phone number.
+# 
+# You can do this in your [Kaggle settings](https://www.kaggle.com/settings).
+# 
+# **2. Make Your Own Copy**
+# 
+# To run any code in this notebook, you first need your own editable copy.
+# 
+# Click the `Copy and Edit` button in the top-right corner.
+# 
+# ![Copy and Edit button](https://storage.googleapis.com/kaggle-media/Images/5gdai_sc_1.png)
+# 
+# This creates a private copy of the notebook just for you.
+# 
+# **3. Run Code Cells**
+# 
+# Once you have your copy, you can run code.
+# 
+# Click the ▶️ Run button next to any code cell to execute it.
+# 
+# ![Run cell button](https://storage.googleapis.com/kaggle-media/Images/5gdai_sc_2.png)
+# 
+# Run the cells in order from top to bottom.
+# 
+# **4. If You Get Stuck**
+# 
+# To restart: Select `Factory reset` from the `Run` menu.
+# 
+# For help: Ask questions on the [Kaggle Discord](https://discord.com/invite/kaggle) server.
+
+# %% [markdown]
+# ---
+# ## ⚙️ Section 1: Setup
+# 
+# ### 1.1: Install dependencies
+# 
+# The Kaggle Notebooks environment includes a pre-installed version of the [google-adk](https://google.github.io/adk-docs/) library for Python and its required dependencies, so you don't need to install additional packages in this notebook.
+# 
+# To install and use ADK in your own Python development environment outside of this course, you can do so by running:
+# 
+# ```
+# pip install google-adk
+# ```
+
+# %% [markdown]
+# ### 1.2: Configure your Gemini API Key
+# 
+# This notebook uses the [Gemini API](https://ai.google.dev/gemini-api/docs), which requires authentication.
+# 
+# **1. Get your API key**
+# 
+# If you don't have one already, create an [API key in Google AI Studio](https://aistudio.google.com/app/api-keys).
+# 
+# **2. Add the key to Kaggle Secrets**
+# 
+# Next, you will need to add your API key to your Kaggle Notebook as a Kaggle User Secret.
+# 
+# 1. In the top menu bar of the notebook editor, select `Add-ons` then `Secrets`.
+# 2. Create a new secret with the label `GOOGLE_API_KEY`.
+# 3. Paste your API key into the "Value" field and click "Save".
+# 4. Ensure that the checkbox next to `GOOGLE_API_KEY` is selected so that the secret is attached to the notebook.
+# 
+# **3. Authenticate in the notebook**
+# 
+# Run the cell below to complete authentication.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:45:14.342519Z","iopub.execute_input":"2025-11-12T15:45:14.342797Z","iopub.status.idle":"2025-11-12T15:45:14.597967Z","shell.execute_reply.started":"2025-11-12T15:45:14.342779Z","shell.execute_reply":"2025-11-12T15:45:14.596695Z"}}
+import os
+from kaggle_secrets import UserSecretsClient
+
+try:
+    GOOGLE_API_KEY = UserSecretsClient().get_secret("GOOGLE_API_KEY")
+    os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+    print("✅ Gemini API key setup complete.")
+except Exception as e:
+    print(
+        f"🔑 Authentication Error: Please make sure you have added 'GOOGLE_API_KEY' to your Kaggle secrets. Details: {e}"
+    )
+
+# %% [markdown]
+# ### 1.3: Import ADK components
+# 
+# Now, import the specific components you'll need from the Agent Development Kit and the Generative AI library. This keeps your code organized and ensures we have access to the necessary building blocks.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:45:16.969081Z","iopub.execute_input":"2025-11-12T15:45:16.969397Z","iopub.status.idle":"2025-11-12T15:45:56.798422Z","shell.execute_reply.started":"2025-11-12T15:45:16.969371Z","shell.execute_reply":"2025-11-12T15:45:56.797403Z"}}
+from google.adk.agents import LlmAgent
+from google.adk.models.google_llm import Gemini
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.adk.memory import InMemoryMemoryService
+from google.adk.tools import load_memory, preload_memory
+from google.genai import types
+
+print("✅ ADK components imported successfully.")
+
+# %% [markdown]
+# ### 1.4: Helper functions
+# 
+# This helper function manages a complete conversation session, handling session creation/retrieval, query processing, and response streaming.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:48:55.282387Z","iopub.execute_input":"2025-11-12T15:48:55.283655Z","iopub.status.idle":"2025-11-12T15:48:55.290892Z","shell.execute_reply.started":"2025-11-12T15:48:55.283633Z","shell.execute_reply":"2025-11-12T15:48:55.290080Z"}}
+async def run_session(
+    runner_instance: Runner, user_queries: list[str] | str, session_id: str = "default"
+):
+    """Helper function to run queries in a session and display responses."""
+    print(f"\n### Session: {session_id}")
+
+    # Create or retrieve session
+    try:
+        session = await session_service.create_session(
+            app_name=APP_NAME, user_id=USER_ID, session_id=session_id
+        )
+    except:
+        session = await session_service.get_session(
+            app_name=APP_NAME, user_id=USER_ID, session_id=session_id
+        )
+
+    # Convert single query to list
+    if isinstance(user_queries, str):
+        user_queries = [user_queries]
+
+    # Process each query
+    for query in user_queries:
+        print(f"\nUser > {query}")
+        query_content = types.Content(role="user", parts=[types.Part(text=query)])
+
+        # Stream agent response
+        async for event in runner_instance.run_async(
+            user_id=USER_ID, session_id=session.id, new_message=query_content
+        ):
+            if event.is_final_response() and event.content and event.content.parts:
+                text = event.content.parts[0].text
+                if text and text != "None":
+                    print(f"Model: > {text}")
+
+
+print("✅ Helper functions defined.")
+
+# %% [markdown]
+# ### 1.5: Configure Retry Options
+# 
+# When working with LLMs, you may encounter transient errors like rate limits or temporary service unavailability. Retry options automatically handle these failures by retrying the request with exponential backoff.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:48:58.118094Z","iopub.execute_input":"2025-11-12T15:48:58.118379Z","iopub.status.idle":"2025-11-12T15:48:58.123235Z","shell.execute_reply.started":"2025-11-12T15:48:58.118359Z","shell.execute_reply":"2025-11-12T15:48:58.122222Z"}}
+retry_config = types.HttpRetryOptions(
+    attempts=5,  # Maximum retry attempts
+    exp_base=7,  # Delay multiplier
+    initial_delay=1,
+    http_status_codes=[429, 500, 503, 504],  # Retry on these HTTP errors
+)
+
+# %% [markdown]
+# ---
+# ## 🤓 Section 2: Memory Workflow
+# 
+# From the Introduction section, you now know why we need Memory. In order to integrate Memory into your Agents, there are **three high-level steps.**
+# 
+# **Three-step integration process:**
+# 
+# 1. **Initialize** → Create a `MemoryService` and provide it to your agent via the `Runner`
+# 2. **Ingest** → Transfer session data to memory using `add_session_to_memory()`
+# 3. **Retrieve** → Search stored memories using `search_memory()`
+# 
+# Let's explore each step in the following sections.
+
+# %% [markdown]
+# <img src="https://storage.googleapis.com/github-repo/kaggle-5days-ai/day3/memory-workflow.png" width="1400" alt="Memory workflow">
+
+# %% [markdown]
+# ---
+# ## 🧠 Section 3: Initialize MemoryService
+
+# %% [markdown]
+# ### 3.1 Initialize Memory
+# 
+# ADK provides multiple `MemoryService` implementations through the `BaseMemoryService` interface:
+# 
+# - **`InMemoryMemoryService`** - Built-in service for prototyping and testing (keyword matching, no persistence)
+# - **`VertexAiMemoryBankService`** - Managed cloud service with LLM-powered consolidation and semantic search
+# - **Custom implementations** - You can build your own using databases, though managed services are recommended
+# 
+# For this notebook, we'll use `InMemoryMemoryService` to learn the core mechanics. The same methods work identically with production-ready services like Vertex AI Memory Bank.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:49:33.294884Z","iopub.execute_input":"2025-11-12T15:49:33.295640Z","iopub.status.idle":"2025-11-12T15:49:33.299392Z","shell.execute_reply.started":"2025-11-12T15:49:33.295605Z","shell.execute_reply":"2025-11-12T15:49:33.298527Z"}}
+memory_service = (
+    InMemoryMemoryService()
+)  # ADK's built-in Memory Service for development and testing
+
+# %% [markdown]
+# ### 3.2 Add Memory to Agent
+# 
+# Next, create a simple agent to answer user queries.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:49:41.446803Z","iopub.execute_input":"2025-11-12T15:49:41.447095Z","iopub.status.idle":"2025-11-12T15:49:41.452505Z","shell.execute_reply.started":"2025-11-12T15:49:41.447072Z","shell.execute_reply":"2025-11-12T15:49:41.451802Z"}}
+# Define constants used throughout the notebook
+APP_NAME = "MemoryDemoApp"
+USER_ID = "demo_user"
+
+# Create agent
+user_agent = LlmAgent(
+    model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+    name="MemoryDemoAgent",
+    instruction="Answer user questions in simple words.",
+)
+
+print("✅ Agent created")
+
+# %% [markdown]
+# #### **Create Runner**
+# 
+# Now provide both Session and Memory services to the `Runner`.
+# 
+# **Key configuration:**
+# 
+# The `Runner` requires both services to enable memory functionality:
+# - **`session_service`** → Manages conversation threads and events
+# - **`memory_service`** → Provides long-term knowledge storage
+# 
+# Both services work together: Sessions capture conversations, Memory stores knowledge for retrieval across sessions.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:50:17.959398Z","iopub.execute_input":"2025-11-12T15:50:17.959639Z","iopub.status.idle":"2025-11-12T15:50:17.966411Z","shell.execute_reply.started":"2025-11-12T15:50:17.959625Z","shell.execute_reply":"2025-11-12T15:50:17.965537Z"}}
+# Create Session Service
+session_service = InMemorySessionService()  # Handles conversations
+
+# Create runner with BOTH services
+runner = Runner(
+    agent=user_agent,
+    app_name="MemoryDemoApp",
+    session_service=session_service,
+    memory_service=memory_service,  # Memory service is now available!
+)
+
+print("✅ Agent and Runner created with memory support!")
+
+# %% [markdown]
+# ### ‼️ Important
+# 
+# **💡 Configuration vs. Usage:** Adding `memory_service` to the `Runner` makes memory *available* to your agent, but doesn't automatically use it. You must explicitly:
+# 1. **Ingest data** using `add_session_to_memory()` 
+# 2. **Enable retrieval** by giving your agent memory tools (`load_memory` or `preload_memory`)
+# 
+# Let's learn these steps next!
+
+# %% [markdown]
+# ### 3.3 MemoryService Implementation Options
+# 
+# **This notebook: `InMemoryMemoryService`**
+# - Stores raw conversation events without consolidation
+# - Keyword-based search (simple word matching)
+# - In-memory storage (resets on restart)
+# - Ideal for learning and local development
+# 
+# **Production: `VertexAiMemoryBankService` (You'll learn this on Day 5)**
+# - LLM-powered extraction of key facts
+# - Semantic search (meaning-based retrieval)
+# - Persistent cloud storage
+# - Integrates external knowledge sources
+# 
+# **💡 API Consistency:** Both implementations use identical methods (`add_session_to_memory()`, `search_memory()`). The workflow you learn here applies to all memory services!
+
+# %% [markdown]
+# ---
+# ## 💾 Section 4: Ingest Session Data into Memory
+
+# %% [markdown]
+# **Why should you transfer Session data to Memory?**
+# 
+# Now that memory is initialized, you need to populate it with knowledge. When you initialize a MemoryService, it starts completely empty. All your conversations are stored in Sessions, which contain raw events including every message, tool call, and metadata. To make this information available for long-term recall, you explicitly transfer it to memory using `add_session_to_memory()`.
+# 
+# Here's where managed memory services like Vertex AI Memory Bank shine. **During transfer, they perform intelligent consolidation - extracting key facts while discarding conversational noise.** The `InMemoryMemoryService` we're using stores everything without consolidation, which is sufficient for learning the mechanics.
+
+# %% [markdown]
+# Before we can transfer anything, we need data. Let's have a conversation with our agent to populate the session. This conversation will be stored in the SessionService just like you learned in the previous notebook.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:50:50.480619Z","iopub.execute_input":"2025-11-12T15:50:50.480904Z","iopub.status.idle":"2025-11-12T15:50:51.709266Z","shell.execute_reply.started":"2025-11-12T15:50:50.480884Z","shell.execute_reply":"2025-11-12T15:50:51.707905Z"}}
+# User tells agent about their favorite color
+await run_session(
+    runner,
+    "My favorite color is blue-green. Can you write a Haiku about it?",
+    "conversation-01",  # Session ID
+)
+
+# %% [markdown]
+# Let's verify the conversation was captured in the session. You should see the session events containing both the user's prompt and the model's response.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:51:10.269325Z","iopub.execute_input":"2025-11-12T15:51:10.269603Z","iopub.status.idle":"2025-11-12T15:51:10.274820Z","shell.execute_reply.started":"2025-11-12T15:51:10.269579Z","shell.execute_reply":"2025-11-12T15:51:10.273825Z"}}
+session = await session_service.get_session(
+    app_name=APP_NAME, user_id=USER_ID, session_id="conversation-01"
+)
+
+# Let's see what's in the session
+print("📝 Session contains:")
+for event in session.events:
+    text = (
+        event.content.parts[0].text[:60]
+        if event.content and event.content.parts
+        else "(empty)"
+    )
+    print(f"  {event.content.role}: {text}...")
+
+# %% [markdown]
+# Perfect! The session contains our conversation. Now we're ready to transfer it to memory. Call `add_session_to_memory()` and pass the session object. This ingests the conversation into the memory store, making it available for future searches.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:51:14.770864Z","iopub.execute_input":"2025-11-12T15:51:14.771179Z","iopub.status.idle":"2025-11-12T15:51:14.776675Z","shell.execute_reply.started":"2025-11-12T15:51:14.771161Z","shell.execute_reply":"2025-11-12T15:51:14.775641Z"}}
+# This is the key method!
+await memory_service.add_session_to_memory(session)
+
+print("✅ Session added to memory!")
+
+# %% [markdown]
+# ---
+# ## 🔎 Section 5: Enable Memory Retrieval in Your Agent
+# 
+# You've successfully transferred session data to memory, but there's one crucial step remaining. **Agents can't directly access the MemoryService - they need tools to search it.** 
+# 
+# This is by design: it gives you control over when and how memory is retrieved.
+
+# %% [markdown]
+# ### 5.1 Memory Retrieval in ADK
+# 
+# ADK provides two built-in tools for memory retrieval:
+# 
+# **`load_memory` (Reactive)**
+# - Agent decides when to search memory
+# - Only retrieves when the agent thinks it's needed
+# - More efficient (saves tokens)
+# - Risk: Agent might forget to search
+# 
+# **`preload_memory` (Proactive)**
+# - Automatically searches before every turn
+# - Memory always available to the agent
+# - Guaranteed context, but less efficient
+# - Searches even when not needed
+# 
+# Think of it like studying for an exam: `load_memory` is looking things up only when you need them, while `preload_memory` is reading all your notes before answering each question.
+
+# %% [markdown]
+# ### 5.2 Add Load Memory Tool to Agent
+# 
+# Let's start by implementing the reactive pattern. We'll recreate the agent from Section 3, this time adding the `load_memory` tool to its toolkit. Since this is a built-in ADK tool, you simply include it in the tools array without any custom implementation.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:51:54.890198Z","iopub.execute_input":"2025-11-12T15:51:54.890471Z","iopub.status.idle":"2025-11-12T15:51:54.895228Z","shell.execute_reply.started":"2025-11-12T15:51:54.890452Z","shell.execute_reply":"2025-11-12T15:51:54.894388Z"}}
+# Create agent
+user_agent = LlmAgent(
+    model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+    name="MemoryDemoAgent",
+    instruction="Answer user questions in simple words. Use load_memory tool if you need to recall past conversations.",
+    tools=[
+        load_memory
+    ],  # Agent now has access to Memory and can search it whenever it decides to!
+)
+
+print("✅ Agent with load_memory tool created.")
+
+# %% [markdown]
+# ### 5.3 Update the Runner and Test
+# 
+# Let's now update the Runner to use our new `user_agent` that has the `load_memory` tool. And we'll ask the Agent about the favorite color which we had stored previously in another session.
+# 
+# **👉 Since sessions don't share conversation history, the only way the agent can answer correctly is by using the `load_memory` tool** to retrieve the information from long-term memory that we manually stored.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:51:59.185737Z","iopub.execute_input":"2025-11-12T15:51:59.185981Z","iopub.status.idle":"2025-11-12T15:52:00.756437Z","shell.execute_reply.started":"2025-11-12T15:51:59.185963Z","shell.execute_reply":"2025-11-12T15:52:00.754901Z"}}
+# Create a new runner with the updated agent
+runner = Runner(
+    agent=user_agent,
+    app_name=APP_NAME,
+    session_service=session_service,
+    memory_service=memory_service,
+)
+
+await run_session(runner, "What is my favorite color?", "color-test")
+
+# %% [markdown]
+# ### 5.4 Complete Manual Workflow Test
+# 
+# Let's see the complete workflow in action. We'll have a conversation about a birthday, manually save it to memory, then test retrieval in a new session. This demonstrates the full cycle: **ingest → store → retrieve**.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:52:08.954650Z","iopub.execute_input":"2025-11-12T15:52:08.954912Z","iopub.status.idle":"2025-11-12T15:52:09.489450Z","shell.execute_reply.started":"2025-11-12T15:52:08.954890Z","shell.execute_reply":"2025-11-12T15:52:09.488410Z"}}
+await run_session(runner, "My birthday is on March 15th.", "birthday-session-01")
+
+# %% [markdown]
+# Now manually save this session to memory. This is the crucial step that transfers the conversation from short-term session storage to long-term memory storage.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:52:17.874138Z","iopub.execute_input":"2025-11-12T15:52:17.874500Z","iopub.status.idle":"2025-11-12T15:52:17.880595Z","shell.execute_reply.started":"2025-11-12T15:52:17.874478Z","shell.execute_reply":"2025-11-12T15:52:17.879819Z"}}
+# Manually save the session to memory
+birthday_session = await session_service.get_session(
+    app_name=APP_NAME, user_id=USER_ID, session_id="birthday-session-01"
+)
+
+await memory_service.add_session_to_memory(birthday_session)
+
+print("✅ Birthday session saved to memory!")
+
+# %% [markdown]
+# Here's the crucial test: we'll start a completely new session with a different session ID and ask the agent to recall the birthday.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:52:26.394648Z","iopub.execute_input":"2025-11-12T15:52:26.394938Z","iopub.status.idle":"2025-11-12T15:52:27.533615Z","shell.execute_reply.started":"2025-11-12T15:52:26.394917Z","shell.execute_reply":"2025-11-12T15:52:27.532528Z"}}
+# Test retrieval in a NEW session
+await run_session(
+    runner, "When is my birthday?", "birthday-session-02"  # Different session ID
+)
+
+# %% [markdown]
+# **What happens:**
+# 
+# 1. Agent receives: "When is my birthday?"
+# 2. Agent recognizes: This requires past conversation context
+# 3. Agent calls: `load_memory("birthday")`
+# 4. Memory returns: Previous conversation containing "March 15th"
+# 5. Agent responds: "Your birthday is on March 15th"
+# 
+# The memory retrieval worked even though this is a completely different session!
+
+# %% [markdown]
+# #### 🚀 Your Turn: Experiment with Both Patterns
+# 
+# Try swapping `load_memory` with `preload_memory` by changing the tools array to `tools=[preload_memory]`.
+# 
+# **What changes:**
+# - `load_memory` (reactive): Agent decides when to search
+# - `preload_memory` (proactive): Automatically loads memory before every turn
+# 
+# **Test it:**
+# 1. Ask "What is my favorite color?" in a new session
+# 2. Ask "Tell me a joke" - notice that `preload_memory` still searches memory even though it's unnecessary
+# 3. Which pattern is better for different use cases?
+
+# %% [markdown]
+# ### 5.5 Manual Memory Search
+# 
+# Beyond agent tools, you can also search memories directly in your code. This is useful for:
+# - Debugging memory contents
+# - Building analytics dashboards  
+# - Creating custom memory management UIs
+# 
+# The `search_memory()` method takes a text query and returns a `SearchMemoryResponse` with matching memories.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:53:01.243829Z","iopub.execute_input":"2025-11-12T15:53:01.244127Z","iopub.status.idle":"2025-11-12T15:53:01.250267Z","shell.execute_reply.started":"2025-11-12T15:53:01.244111Z","shell.execute_reply":"2025-11-12T15:53:01.249334Z"}}
+# Search for color preferences
+search_response = await memory_service.search_memory(
+    app_name=APP_NAME, user_id=USER_ID, query="What is the user's favorite color?"
+)
+
+print("🔍 Search Results:")
+print(f"  Found {len(search_response.memories)} relevant memories")
+print()
+
+for memory in search_response.memories:
+    if memory.content and memory.content.parts:
+        text = memory.content.parts[0].text[:80]
+        print(f"  [{memory.author}]: {text}...")
+
+# %% [markdown]
+# #### **🚀 Your Turn: Test Different Queries**
+# 
+# Try these searches to understand how keyword matching works with `InMemoryMemoryService`:
+# 
+# 1. **"what color does the user like"**
+# 2. **"haiku"**
+# 3. **"age"**
+# 4. **"preferred hue"**
+# 
+# Notice which queries return results and which don't. What pattern do you observe?
+# 
+# **💡 Key Insight:** Memory search is grounded in reality - agents can't hallucinate memories that don't exist.
+
+# %% [markdown]
+# ### 5.6 How Search Works
+# 
+# **InMemoryMemoryService (this notebook):**
+# - **Method:** Keyword matching
+# - **Example:** "favorite color" matches because those exact words exist
+# - **Limitation:** "preferred hue" won't match
+# 
+# **VertexAiMemoryBankService (Day 5):**
+# - **Method:** Semantic search via embeddings
+# - **Example:** "preferred hue" WILL match "favorite color"
+# - **Advantage:** Understands meaning, not just keywords
+# 
+# You'll explore semantic search in Day 5!
+
+# %% [markdown]
+# ---
+# ## 🤖 Section 6: Automating Memory Storage
+
+# %% [markdown]
+# So far, we've **manually** called `add_session_to_memory()` to transfer data to long-term storage. Production systems need this to happen **automatically**.
+
+# %% [markdown]
+# ### 6.1 Callbacks
+# 
+# ADK's callback system lets you hook into key execution moments. Callbacks are **Python functions** you define and attach to agents - ADK automatically calls them at specific stages, acting like checkpoints during the agent's execution flow.
+# 
+# **Think of callbacks as event listeners in your agent's lifecycle.** When an agent processes a request, it goes through multiple stages: receiving the input, calling the LLM, invoking tools, and generating the response. Callbacks let you insert custom logic at each of these stages without modifying the core agent code.
+# 
+# **Available callback types:**
+# 
+# - `before_agent_callback` → Runs before agent starts processing a request
+# - `after_agent_callback` → Runs after agent completes its turn  
+# - `before_tool_callback` / `after_tool_callback` → Around tool invocations
+# - `before_model_callback` / `after_model_callback` → Around LLM calls
+# - `on_model_error_callback` → When errors occur
+# 
+# **Common use cases:**
+# 
+# - Logging and observability (track what the agent does)
+# - Automatic data persistence (like saving to memory)
+# - Custom validation or filtering
+# - Performance monitoring
+# 
+# **📚 Learn More:** [ADK Callbacks Documentation](https://google.github.io/adk-docs/agents/callbacks/)
+
+# %% [markdown]
+# ![image.png](https://storage.googleapis.com/github-repo/kaggle-5days-ai/day4/types_of_callbacks.png)
+
+# %% [markdown]
+# ### 6.2 Automatic Memory Storage with Callbacks
+# 
+# For automatic memory storage, we'll use `after_agent_callback`. This function triggers every time the agent finishes a turn, then calls `add_session_to_memory()` to persist the conversation automatically.
+# 
+# But here's the challenge: how does our callback function actually access the memory service and current session? That's where `callback_context` comes in.
+# 
+# When you define a callback function, ADK automatically passes a special parameter called `callback_context` to it. The `callback_context` provides access to the Memory Service and other runtime components.
+# 
+# **How we'll use it:** In our callback, we'll access the memory service and current session to automatically save conversation data after each turn.
+# 
+# **💡 Important:** You don't create this context - ADK creates it and passes it to your callback automatically when the callback runs.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:54:42.813840Z","iopub.execute_input":"2025-11-12T15:54:42.814188Z","iopub.status.idle":"2025-11-12T15:54:42.820060Z","shell.execute_reply.started":"2025-11-12T15:54:42.814166Z","shell.execute_reply":"2025-11-12T15:54:42.818683Z"}}
+async def auto_save_to_memory(callback_context):
+    """Automatically save session to memory after each agent turn."""
+    await callback_context._invocation_context.memory_service.add_session_to_memory(
+        callback_context._invocation_context.session
+    )
+
+
+print("✅ Callback created.")
+
+# %% [markdown]
+# ### 6.3 Create an Agent: Callback and PreLoad Memory Tool
+# 
+# Now create an agent that combines:
+# - **Automatic storage:** `after_agent_callback` saves conversations
+# - **Automatic retrieval:** `preload_memory` loads memories
+# 
+# This creates a fully automated memory system with zero manual intervention.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:54:50.397925Z","iopub.execute_input":"2025-11-12T15:54:50.398219Z","iopub.status.idle":"2025-11-12T15:54:50.403897Z","shell.execute_reply.started":"2025-11-12T15:54:50.398203Z","shell.execute_reply":"2025-11-12T15:54:50.402861Z"}}
+# Agent with automatic memory saving
+auto_memory_agent = LlmAgent(
+    model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+    name="AutoMemoryAgent",
+    instruction="Answer user questions.",
+    tools=[preload_memory],
+    after_agent_callback=auto_save_to_memory,  # Saves after each turn!
+)
+
+print("✅ Agent created with automatic memory saving!")
+
+# %% [markdown]
+# **What happens automatically:**
+# 
+# - After every agent response → callback triggers
+# - Session data → transferred to memory
+# - No manual `add_session_to_memory()` calls needed
+# 
+# The framework handles everything!
+
+# %% [markdown]
+# ### 6.4 Create a Runner and Test The Agent
+# 
+# Time to test! Create a Runner with the auto-memory agent, connecting the session and memory services.
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:54:59.662379Z","iopub.execute_input":"2025-11-12T15:54:59.662670Z","iopub.status.idle":"2025-11-12T15:54:59.667948Z","shell.execute_reply.started":"2025-11-12T15:54:59.662651Z","shell.execute_reply":"2025-11-12T15:54:59.667199Z"}}
+# Create a runner for the auto-save agent
+# This connects our automated agent to the session and memory services
+auto_runner = Runner(
+    agent=auto_memory_agent,  # Use the agent with callback + preload_memory
+    app_name=APP_NAME,
+    session_service=session_service,  # Same services from Section 3
+    memory_service=memory_service,
+)
+
+print("✅ Runner created.")
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-11-12T15:55:01.925723Z","iopub.execute_input":"2025-11-12T15:55:01.925984Z","iopub.status.idle":"2025-11-12T15:55:03.440320Z","shell.execute_reply.started":"2025-11-12T15:55:01.925967Z","shell.execute_reply":"2025-11-12T15:55:03.439558Z"}}
+# Test 1: Tell the agent about a gift (first conversation)
+# The callback will automatically save this to memory when the turn completes
+await run_session(
+    auto_runner,
+    "I gifted a new toy to my nephew on his 1st birthday!",
+    "auto-save-test",
+)
+
+# Test 2: Ask about the gift in a NEW session (second conversation)
+# The agent should retrieve the memory using preload_memory and answer correctly
+await run_session(
+    auto_runner,
+    "What did I gift my nephew?",
+    "auto-save-test-2",  # Different session ID - proves memory works across sessions!
+)
+
+# %% [markdown]
+# **What just happened:**
+# 
+# 1. **First conversation:** Mentioned gift to nephew
+#    - Callback automatically saved to memory ✅
+# 2. **Second conversation (new session):** Asked about the gift  
+#    - `preload_memory` automatically retrieved the memory ✅
+#    - Agent answered correctly ✅
+# 
+# **Zero manual memory calls!** This is automated memory management in action.
+
+# %% [markdown]
+# ### 6.5 How often should you save Sessions to Memory?
+# 
+# **Options:**
+# 
+# | Timing | Implementation | Best For |
+# |--------|----------------|----------|
+# | **After every turn** | `after_agent_callback` | Real-time memory updates |
+# | **End of conversation** | Manual call when session ends | Batch processing, reduce API calls |
+# | **Periodic intervals** | Timer-based background job | Long-running conversations |
+
+# %% [markdown]
+# ---
+# ## 🧩 Section 7: Memory Consolidation
+
+# %% [markdown]
+# ### 7.1 The Limitation of Raw Storage
+# 
+# **What we've stored so far:**
+# - Every user message
+# - Every agent response  
+# - Every tool call
+# 
+# **The problem:**
+# ```
+# Session: 50 messages = 10,000 tokens
+# Memory:  All 50 messages stored
+# Search:  Returns all 50 messages → Agent must process 10,000 tokens
+# ```
+# 
+# This doesn't scale. We need **consolidation**.
+
+# %% [markdown]
+# ### 7.2 What is Memory Consolidation?
+# 
+# **Memory Consolidation** = Extracting **only important facts** while discarding conversational noise.
+# 
+# **Before (Raw Storage):**
+# 
+# ```
+# User: "My favorite color is BlueGreen. I also like purple. 
+#        Actually, I prefer BlueGreen most of the time."
+# Agent: "Great! I'll remember that."
+# User: "Thanks!"
+# Agent: "You're welcome!"
+# 
+# → Stores ALL 4 messages (redundant, verbose)
+# ```
+# 
+# **After (Consolidation):**
+# 
+# ```
+# Extracted Memory: "User's favorite color: BlueGreen"
+# 
+# → Stores 1 concise fact
+# ```
+# 
+# **Benefits:** Less storage, faster retrieval, more accurate answers.
+
+# %% [markdown]
+# <img src="https://storage.googleapis.com/github-repo/kaggle-5days-ai/day3/memory-consolidation.png" width="1400" alt="Memory consolidation">
+
+# %% [markdown]
+# ### 7.3 How Consolidation Works (Conceptual)
+# 
+# **The pipeline:**
+# 
+# ```
+# 1. Raw Session Events
+#    ↓
+# 2. LLM analyzes conversation
+#    ↓
+# 3. Extracts key facts
+#    ↓
+# 4. Stores concise memories
+#    ↓
+# 5. Merges with existing memories (deduplication)
+# ```
+# 
+# **Example transformation:**
+# 
+# ```
+# Input:  "I'm allergic to peanuts. I can't eat anything with nuts."
+# 
+# Output: Memory {
+#   allergy: "peanuts, tree nuts"
+#   severity: "avoid completely"
+# }
+# ```
+# 
+# Natural language → Structured, actionable data.
+
+# %% [markdown]
+# ### 7.4 Next Steps for Memory Consolidation
+# 
+# **💡 Key Point:** Managed Memory Services handle consolidation **automatically**. 
+# 
+# **You use the same API:**
+# - `add_session_to_memory()` ← Same method
+# - `search_memory()` ← Same method
+# 
+# **The difference:** What happens behind the scenes.
+# - **InMemoryMemoryService:** Stores raw events
+# - **VertexAiMemoryBankService:** Intelligently consolidates before storing
+# 
+# **📚 Learn More:**
+# - [Vertex AI Memory Bank: Memory Consolidation Guide](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/generate-memories) -> You'll explore this in Day 5!
+# 
+
+# %% [markdown]
+# ---
+# ## 📊 Summary
+
+# %% [markdown]
+# You've learned the **core mechanics** of Memory in ADK:
+# 
+# 1. **✅ Adding Memory**
+#    - Initialize `MemoryService` alongside `SessionService`
+#    - Both services are provided to the `Runner`
+# 
+# 2. **✅ Storing Information**
+#    - `await memory_service.add_session_to_memory(session)`
+#    - Transfers session data to long-term storage
+#    - Can be automated with callbacks
+# 
+# 3. **✅ Searching Memory**
+#    - `await memory_service.search_memory(app_name, user_id, query)`
+#    - Returns relevant memories from past conversations
+# 
+# 4. **✅ Retrieving in Agents**
+#    - **Reactive:** `load_memory` tool (agent decides when to use memory)
+#    - **Proactive:** `preload_memory` tool (always loads memory into LLM's system instructions)
+# 
+# 5. **✅ Memory Consolidation**
+#    - Extracts key information from Session data
+#    - Provided by managed memory services such as Vertex AI Memory Bank
+
+# %% [markdown]
+# ## 🎉 **Congratulations!** You've learned Memory Management in ADK!
+
+# %% [markdown]
+# **📚 Learn More:**
+# - [ADK Memory Documentation](https://google.github.io/adk-docs/sessions/memory/)
+# - [Vertex AI Memory Bank](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/overview)
+# - [Memory Consolidation Guide](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/memory-bank/generate-memories)
+# 
+# **🎯 Next Steps:**
+# 
+# Ready for Day 4? Learn how to **implement Observability and Evaluate your agents** to ensure they're working as intended in production!
+
+# %% [markdown]
+# ---
+# 
+# ## Authors
+# 
+# | Authors |
+# | --- |
+# | [Sampath M](https://www.linkedin.com/in/msampathkumar/) |

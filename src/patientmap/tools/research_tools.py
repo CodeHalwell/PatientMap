@@ -1,8 +1,5 @@
-import httpx 
-from typing import List, Dict, Any
 from google.adk.tools import AgentTool, FunctionTool
 from dotenv import load_dotenv
-import os
 from langchain_community.tools.google_scholar import GoogleScholarQueryRun
 from langchain_community.utilities.google_scholar import GoogleScholarAPIWrapper
 from langchain_community.tools.pubmed.tool import PubmedQueryRun

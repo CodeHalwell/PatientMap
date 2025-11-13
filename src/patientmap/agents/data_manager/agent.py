@@ -7,7 +7,6 @@ src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
 from google.adk.agents import LlmAgent
-from google.adk.tools import AgentTool
 from patientmap.common.config import AgentConfig
 from google.adk.models.google_llm import Gemini
 

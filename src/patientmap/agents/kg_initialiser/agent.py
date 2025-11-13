@@ -6,10 +6,9 @@ from pathlib import Path
 src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
-from google.adk.agents import LoopAgent, LlmAgent, SequentialAgent
+from google.adk.agents import LoopAgent, LlmAgent
 from google.adk.tools import exit_loop
 from patientmap.common.config import AgentConfig
-from patientmap.common.models import KnowledgeGraph
 from patientmap.tools.kg_tools import (
     initialize_patient_graph,
     bulk_add_nodes,

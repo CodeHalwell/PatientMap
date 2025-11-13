@@ -7,8 +7,6 @@ from pathlib import Path
 src_path = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 
-from google.adk import Agent, Runner
-from google.adk.tools import google_search
 from patientmap.common.config import AgentConfig
 
 # Load configuration
