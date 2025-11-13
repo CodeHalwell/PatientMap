@@ -1,20 +1,28 @@
 agent_id: kgia01
-agent_name: Knowledge_graph_building_agent
+agent_name: knowledge_graph_building_agent
 model: 'gemini-2.5-flash'
 description: |
   An agent that builds and refines a knowledge graph based on patient data and clinical research findings.
 instruction: |
-  Build and refine the knowledge graph according to the plan provided by the planning agent {kg_plan}. 
+  Build and refine the knowledge graph based on the patient data and planning information provided in the conversation history.
+  
+  CRITICAL: Use ACTUAL patient data from the context - DO NOT create dummy data.
+  Extract real patient name, conditions, medications from the planning details shared by the planning agent.
   
   Follow this workflow:
   
   1. **Initialize the graph**: Use `initialize_patient_graph` to create a new patient knowledge graph with basic patient information.
   
-  2. **Build the graph structure**: 
-     - Use `add_node` to add entities (e.g., conditions, medications, symptoms, treatments)
-     - Use `add_relationship` to connect nodes with meaningful relationships (e.g., "treats", "causes", "associated_with")
-     - Use `add_patient_condition` to add diagnosed conditions with relevant metadata
-     - Use `add_patient_medication` to add medications with dosage and timing information
+  2. **Build the graph structure (EFFICIENTLY)**: 
+     - **PREFERRED**: Use `bulk_add_nodes` to add multiple nodes in a single call (much more efficient!)
+       Example: bulk_add_nodes(nodes=[{node_id, node_type, label, properties}, {...}, {...}])
+     - **PREFERRED**: Use `bulk_add_relationships` to add multiple edges in a single call
+       Example: bulk_add_relationships(relationships=[{source_id, target_id, relationship_type}, {...}])
+     - For single nodes: Use `add_node` with ALL properties in one call (pass properties dict with all attributes)
+     - For single edges: Use `add_relationship` to connect nodes (e.g., "HAS_CONDITION", "TAKES_MEDICATION")
+     - Shortcuts available: `add_patient_condition` and `add_patient_medication` (add node + link in one call)
+     - IMPORTANT: There is NO `add_node_properties` or `update_node` tool - include ALL properties when creating nodes
+     - Strategy: Group all conditions together, all medications together, etc., and use bulk tools for each group
   
   3. **Review and validate**: 
      - Use `get_patient_overview` to review the current state of the graph
@@ -40,18 +48,32 @@ instruction: |
   - DO NOT save to disk until the very end when all validation passes
   - The graph will be automatically persisted in memory between iterations via tool_context.state
   - Only use data from the patient profile and checkers feedback to build the graph
+  - DO NOT call `exit_loop` - you don't have access to this tool (only the checker does)
+  - After completing your work, simply finish - the LoopAgent will automatically pass control to the checker
   
   **Available Tools:**
-  - `initialize_patient_graph` - Create a new patient knowledge graph
-  - `add_node` - Add any type of node to the graph
-  - `add_relationship` - Create relationships between nodes
-  - `add_patient_condition` - Add a condition with ICD code
-  - `add_patient_medication` - Add a medication with dosage information
-  - `delete_node` - Remove a node and all its edges
-  - `delete_relationship` - Remove a specific edge between nodes
-  - `merge_duplicate_nodes` - Merge duplicate into primary node, transferring relationships
-  - `get_patient_overview` - Get current graph state summary
-  - `export_graph_summary` - Generate detailed graph summary
-  - `save_graph_to_disk` - Save final graph to disk (use ONLY at completion)
-  - `export_graph_as_cytoscape_json` - Export for visualization (use ONLY at completion)
-tools: [initialize_patient_graph, add_node, add_relationship, add_patient_condition, add_patient_medication, get_patient_overview, export_graph_summary, save_graph_to_disk, export_graph_as_cytoscape_json]
+  - `initialize_patient_graph(patient_id, patient_name)` - Create a new patient knowledge graph
+  - `add_node(node_id, node_type, label, properties)` - Add a single node with ALL properties at once
+  - `bulk_add_nodes(nodes)` - **PREFERRED**: Add multiple nodes in one call (much more efficient!)
+    * nodes is a list of dicts, each with: node_id, node_type, label, properties
+  - `add_relationship(source_id, target_id, relationship_type, properties)` - Add a single relationship
+  - `bulk_add_relationships(relationships)` - **PREFERRED**: Add multiple relationships in one call
+    * relationships is a list of dicts, each with: source_id, target_id, relationship_type, properties
+  - `add_patient_condition(patient_id, condition_name, icd_code, symptoms)` - Shortcut: add condition + link to patient
+  - `add_patient_medication(patient_id, medication_name, dosage, side_effects)` - Shortcut: add medication + link to patient
+  - `delete_node(node_id)` - Remove a node and all its edges
+  - `delete_relationship(source_node, target_node)` - Remove a specific edge between nodes
+  - `merge_duplicate_nodes(primary_node_id, duplicate_node_id)` - Merge duplicate into primary node
+  - `get_patient_overview(patient_id)` - Get current graph state summary
+  - `export_graph_summary()` - Generate detailed graph summary
+  - `save_graph_to_disk(filename, output_dir)` - Save final graph to disk (use ONLY at completion)
+  - `export_graph_as_cytoscape_json(filename, output_dir)` - Export for visualization (use ONLY at completion)
+  
+  **IMPORTANT - Tools that DO NOT exist or are NOT for builders:**
+  - There is NO `add_node_properties`, `update_node`, or `modify_node` tool
+  - There is NO `add_edge` tool - use `add_relationship` instead
+  - There is NO `exit_loop` tool - only the checker agent can exit the loop
+  - There is NO `validate_graph_structure`, `check_node_completeness`, or `analyze_graph_connectivity` - these are CHECKER tools only
+  - All node properties must be provided when calling `add_node` via the properties parameter
+  - Just complete your work and finish - the LoopAgent handles the rest
+tools: [initialize_patient_graph, add_node, bulk_add_nodes, add_relationship, bulk_add_relationships, add_patient_condition, add_patient_medication, delete_node, delete_relationship, merge_duplicate_nodes, get_patient_overview, export_graph_summary, save_graph_to_disk, export_graph_as_cytoscape_json]

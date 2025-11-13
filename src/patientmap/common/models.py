@@ -36,14 +36,18 @@ class GraphEdge(BaseModel):
     relationship: str = Field(..., description="Type of relationship between source and target nodes")
 
 class KnowledgeGraph(BaseModel):
-    """Simplified KG model for Gemini API compatibility - avoids nested Pydantic models"""
-    node_ids: list[str] = Field(..., description="List of node IDs in the knowledge graph")
+    """Simplified KG model for Gemini API compatibility - avoids nested Pydantic models
+    
+    Note: For planning purposes, focus on high-level structure with representative examples
+    rather than exhaustive enumeration of all nodes/edges.
+    """
+    node_ids: list[str] = Field(..., description="List of key representative node IDs (limit to ~20 essential nodes)")
     node_labels: list[str] = Field(..., description="List of node labels corresponding to node_ids")
     node_types: list[str] = Field(..., description="List of node types corresponding to node_ids")
-    edge_sources: list[str] = Field(..., description="List of source node IDs for edges")
-    edge_targets: list[str] = Field(..., description="List of target node IDs for edges")
-    edge_relationships: list[str] = Field(..., description="List of relationship types for edges")
-    description: str = Field(..., description="High-level description of the knowledge graph plan")
+    edge_sources: list[str] = Field(..., description="List of source node IDs for key representative edges (limit to ~40 edges)")
+    edge_targets: list[str] = Field(..., description="List of target node IDs for key representative edges")
+    edge_relationships: list[str] = Field(..., description="List of relationship types for key representative edges")
+    description: str = Field(..., description="High-level description of the knowledge graph plan and structure")
 
 class MedicalCondition(BaseModel):
     name: str = Field(..., description="Name of the medical condition")

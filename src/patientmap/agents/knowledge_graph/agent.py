@@ -12,14 +12,12 @@ from google.adk.agents import LlmAgent, LoopAgent
 from google.adk.tools import exit_loop
 from patientmap.common.config import AgentConfig
 from patientmap.tools.kg_tools import (
-    add_clinical_trial,
-    add_node,
-    add_patient_condition,
-    add_patient_medication,
-    add_research_article,
-    add_relationship,
+    bulk_add_nodes,
+    bulk_add_relationships,
+    bulk_link_articles_to_conditions,
     analyze_graph_connectivity,
     check_node_completeness,
+    bulk_check_node_completeness,
     export_graph_as_cytoscape_json,
     export_graph_summary,
     get_node_relationships,
@@ -29,11 +27,13 @@ from patientmap.tools.kg_tools import (
     save_graph_to_disk,
     validate_graph_structure,
     get_patient_overview,
-    link_article_to_condition,
     delete_node,
     delete_relationship,
     merge_duplicate_nodes,
 )
+
+from patientmap.common.helper_functions import retry_config
+from google.adk.models.google_llm import Gemini
 
 # Load configuration
 config_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / "knowledge" / "knowledge_graph_agent.yaml"
@@ -55,30 +55,23 @@ except FileNotFoundError:
 knowledge_graph_agent = Agent(
     name=knowledge_graph_agent_settings.agent_name,
     description=knowledge_graph_agent_settings.description,
-    model=knowledge_graph_agent_settings.model,
+    model=Gemini(model_name=knowledge_graph_agent_settings.model, retry_options=retry_config),
     instruction=knowledge_graph_agent_settings.instruction,
     tools=[
         list_knowledge_graphs,
         load_graph_from_disk,
-        add_node,
-        add_relationship,
-        add_patient_condition,
-        add_patient_medication,
-        add_research_article,
-        link_article_to_condition,
-        add_clinical_trial,
+        bulk_add_nodes,
+        bulk_add_relationships,
+        bulk_link_articles_to_conditions,
         get_patient_overview,
         export_graph_summary,
         save_graph_to_disk,
         export_graph_as_cytoscape_json,
-        validate_graph_structure,
         list_all_nodes_by_type,
         get_node_relationships,
         delete_node,
         delete_relationship,
         merge_duplicate_nodes,
-        check_node_completeness,
-        analyze_graph_connectivity,
     ]
 )
 
@@ -86,11 +79,12 @@ knowledge_graph_agent = Agent(
 enrichment_checker = LlmAgent(
     name=kg_checker_config.agent_name,
     description=kg_checker_config.description,
-    model=kg_checker_config.model,
+    model=Gemini(model_name=kg_checker_config.model, retry_options=retry_config),
     instruction=kg_checker_config.instruction,
     tools=[
         validate_graph_structure,
         check_node_completeness,
+        bulk_check_node_completeness,
         analyze_graph_connectivity,
         list_all_nodes_by_type,
         get_node_relationships,

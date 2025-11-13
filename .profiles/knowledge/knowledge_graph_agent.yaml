@@ -1,5 +1,5 @@
 agent_id: kga001
-agent_name: Knowledge_Graph_Enrichment_Agent
+agent_name: knowledge_graph_enrichment_agent
 model: 'gemini-2.5-flash'
 description: An agent that enriches existing patient knowledge graphs with research findings, clinical trials, and evidence-based literature.
 instruction: |
@@ -28,27 +28,34 @@ instruction: |
 
   **Enrichment Workflow - For EACH research finding:**
 
-  1. **Add Research Articles:**
-     - Use `add_research_article` for each relevant study/guideline
-     - Include: title, authors, publication year, journal, DOI/URL, key findings
+  1. **Add Research Articles (Use bulk_add_nodes):**
+     - Use `bulk_add_nodes` for adding research articles (can handle single or multiple)
+       * Prepare a list of node dictionaries with node_id, node_type='research_article', label, and properties
+       * For a single article, use a list with one item: [{"node_id": "article_123", "node_type": "research_article", "label": "Study Title", "properties": {...}}]
+       * For multiple articles, include all in the same list
+     - Include in properties: title, authors, publication_date, journal, url, abstract, keywords
      - Extract actionable clinical recommendations
+     - Example for clinical trials: node_type='clinical_trial' with properties like trial_id, phase, status
 
-  2. **Link to Existing Conditions:**
-     - Use `link_article_to_condition` to connect research to patient's conditions
-     - Create relationships: "supports_treatment", "contraindicated_for", "monitoring_required"
+  2. **Link Articles to Conditions (Use bulk_link_articles_to_conditions):**
+     - Use `bulk_link_articles_to_conditions` for linking (can handle single or multiple links)
+       * Prepare a list of link dictionaries with article_id, condition_id, relevance, confidence
+       * For a single link: [{"article_id": "article_123", "condition_id": "condition_diabetes", "relevance": "treatment", "confidence": 0.9}]
+       * For multiple links: include all in the same list
+     - Relevance types: "treatment", "diagnosis", "prognosis", "related"
      - Link drug interaction studies to relevant medication nodes
+     - Confidence score: 0.0 to 1.0 (optional)
 
-  3. **Add Clinical Trials:**
-     - Use `add_clinical_trial` for relevant ongoing or completed trials
-     - Include: trial ID, phase, status, eligibility criteria, outcomes
-     - Link trials to conditions they address
-
-  4. **Create New Evidence-Based Relationships:**
-     - Use `add_relationship` to create connections revealed by research
+  3. **Create Evidence-Based Relationships (Use bulk_add_relationships):**
+     - Use `bulk_add_relationships` for all relationship creation (can handle single or multiple)
+       * Prepare a list of relationship dictionaries with source_id, target_id, relationship_type, properties
+       * For a single relationship: [{"source_id": "nodeA", "target_id": "nodeB", "relationship_type": "RELATED_TO", "properties": {...}}]
+       * For multiple relationships: include all in the same list
      - Examples:
        * Condition A "increases_risk_of" Condition B (comorbidity evidence)
        * Medication X "requires_monitoring" Lab Test Y (safety protocols)
        * Condition + Medication "associated_with" Adverse Effect (side effect data)
+       * Research Article "supports" Treatment Recommendation
 
   5. **Verify Integration:**
      - Use `find_related_research` to check what research is connected to each condition

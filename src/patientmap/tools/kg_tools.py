@@ -23,15 +23,15 @@ def _get_graph(tool_context: ToolContext) -> nx.DiGraph:
     if 'kg_data' not in tool_context.state:
         return nx.DiGraph()
     
-    # Deserialize from node_link_data format
+    # Deserialize from node_link_data format with explicit edges parameter
     data = tool_context.state['kg_data']
-    return nx.node_link_graph(data, directed=True)
+    return nx.node_link_graph(data, directed=True, edges="links")
 
 
 def _save_graph(graph: nx.DiGraph, tool_context: ToolContext) -> None:
     """Save the knowledge graph to tool context in serializable format."""
-    # Serialize to node_link_data format (JSON-compatible)
-    data = nx.node_link_data(graph)
+    # Serialize to node_link_data format (JSON-compatible) with explicit edges parameter
+    data = nx.node_link_data(graph, edges="links")
     tool_context.state['kg_data'] = data
 
 
@@ -105,6 +105,106 @@ def add_node(
     return f"Added {node_type} node: {node_id} - {label}"
 
 
+def bulk_add_nodes(
+    nodes: list[dict[str, Any]],
+    tool_context: ToolContext = None
+) -> str:
+    """Add multiple nodes to the knowledge graph in a single operation.
+    
+    This is more efficient than calling add_node multiple times when creating
+    many nodes at once.
+    
+    Args:
+        nodes: List of node dictionaries, each containing:
+            - node_id (str): Unique identifier for the node
+            - node_type (str): Type of node (e.g., 'condition', 'medication', 'symptom')
+            - label (str): Human-readable label for the node
+            - properties (dict, optional): Additional properties for the node
+        tool_context: ADK tool context for state management
+        
+    Returns:
+        Confirmation message with count of nodes added
+        
+    Example:
+        nodes = [
+            {
+                "node_id": "condition_diabetes",
+                "node_type": "condition",
+                "label": "Type 2 Diabetes",
+                "properties": {"icd_code": "E11.9", "severity": "moderate"}
+            },
+            {
+                "node_id": "medication_metformin",
+                "node_type": "medication",
+                "label": "Metformin",
+                "properties": {"dosage": "500mg", "frequency": "BID"}
+            }
+        ]
+    """
+    graph = _get_graph(tool_context)
+    
+    if graph.number_of_nodes() == 0:
+        return "Error: Knowledge graph not initialized. Call initialize_patient_graph first."
+    
+    added_nodes = []
+    errors = []
+    
+    for i, node_data in enumerate(nodes):
+        try:
+            # Validate required fields
+            if 'node_id' not in node_data:
+                errors.append(f"Node {i}: Missing required field 'node_id'")
+                continue
+            if 'node_type' not in node_data:
+                errors.append(f"Node {i}: Missing required field 'node_type'")
+                continue
+            if 'label' not in node_data:
+                errors.append(f"Node {i}: Missing required field 'label'")
+                continue
+            
+            node_id = node_data['node_id']
+            node_type = node_data['node_type']
+            label = node_data['label']
+            properties = node_data.get('properties', {})
+            
+            # Prepare node attributes
+            attrs = {
+                'node_type': node_type,
+                'label': label
+            }
+            if properties:
+                attrs.update(properties)
+            
+            # Add node to graph
+            graph.add_node(node_id, **attrs)
+            added_nodes.append(f"{node_type}: {label} ({node_id})")
+            
+        except Exception as e:
+            errors.append(f"Node {i} ({node_data.get('node_id', 'unknown')}): {str(e)}")
+    
+    # Save graph once after all nodes added
+    _save_graph(graph, tool_context)
+    
+    # Build result message
+    result_parts = [f"Successfully added {len(added_nodes)} nodes to the knowledge graph."]
+    
+    if added_nodes:
+        result_parts.append("\nNodes added:")
+        for node_desc in added_nodes[:10]:  # Show first 10
+            result_parts.append(f"  - {node_desc}")
+        if len(added_nodes) > 10:
+            result_parts.append(f"  ... and {len(added_nodes) - 10} more")
+    
+    if errors:
+        result_parts.append(f"\n{len(errors)} errors encountered:")
+        for error in errors[:5]:  # Show first 5 errors
+            result_parts.append(f"  - {error}")
+        if len(errors) > 5:
+            result_parts.append(f"  ... and {len(errors) - 5} more errors")
+    
+    return "\n".join(result_parts)
+
+
 def add_relationship(
     source_id: str,
     target_id: str,
@@ -141,6 +241,107 @@ def add_relationship(
     _save_graph(graph, tool_context)
     
     return f"Added relationship: {source_id} --[{relationship_type}]--> {target_id}"
+
+
+def bulk_add_relationships(
+    relationships: list[dict[str, Any]],
+    tool_context: ToolContext = None
+) -> str:
+    """Add multiple relationships to the knowledge graph in a single operation.
+    
+    This is more efficient than calling add_relationship multiple times when creating
+    many edges at once.
+    
+    Args:
+        relationships: List of relationship dictionaries, each containing:
+            - source_id (str): ID of the source node
+            - target_id (str): ID of the target node
+            - relationship_type (str): Type of relationship (e.g., 'HAS_CONDITION', 'TAKES_MEDICATION')
+            - properties (dict, optional): Additional properties for the edge
+        tool_context: ADK tool context for state management
+        
+    Returns:
+        Confirmation message with count of relationships added
+        
+    Example:
+        relationships = [
+            {
+                "source_id": "patient_123",
+                "target_id": "condition_diabetes",
+                "relationship_type": "HAS_CONDITION",
+                "properties": {"onset_date": "2020-01-15"}
+            },
+            {
+                "source_id": "patient_123",
+                "target_id": "medication_metformin",
+                "relationship_type": "TAKES_MEDICATION"
+            }
+        ]
+    """
+    graph = _get_graph(tool_context)
+    
+    added_relationships = []
+    errors = []
+    
+    for i, rel_data in enumerate(relationships):
+        try:
+            # Validate required fields
+            if 'source_id' not in rel_data:
+                errors.append(f"Relationship {i}: Missing required field 'source_id'")
+                continue
+            if 'target_id' not in rel_data:
+                errors.append(f"Relationship {i}: Missing required field 'target_id'")
+                continue
+            if 'relationship_type' not in rel_data:
+                errors.append(f"Relationship {i}: Missing required field 'relationship_type'")
+                continue
+            
+            source_id = rel_data['source_id']
+            target_id = rel_data['target_id']
+            relationship_type = rel_data['relationship_type']
+            properties = rel_data.get('properties', {})
+            
+            # Check if nodes exist
+            if source_id not in graph:
+                errors.append(f"Relationship {i}: Source node '{source_id}' does not exist")
+                continue
+            if target_id not in graph:
+                errors.append(f"Relationship {i}: Target node '{target_id}' does not exist")
+                continue
+            
+            # Prepare edge attributes
+            attrs = {'relationship_type': relationship_type}
+            if properties:
+                attrs.update(properties)
+            
+            # Add edge to graph
+            graph.add_edge(source_id, target_id, **attrs)
+            added_relationships.append(f"{source_id} --[{relationship_type}]--> {target_id}")
+            
+        except Exception as e:
+            errors.append(f"Relationship {i}: {str(e)}")
+    
+    # Save graph once after all relationships added
+    _save_graph(graph, tool_context)
+    
+    # Build result message
+    result_parts = [f"Successfully added {len(added_relationships)} relationships to the knowledge graph."]
+    
+    if added_relationships:
+        result_parts.append("\nRelationships added:")
+        for rel_desc in added_relationships[:10]:  # Show first 10
+            result_parts.append(f"  - {rel_desc}")
+        if len(added_relationships) > 10:
+            result_parts.append(f"  ... and {len(added_relationships) - 10} more")
+    
+    if errors:
+        result_parts.append(f"\n{len(errors)} errors encountered:")
+        for error in errors[:5]:  # Show first 5 errors
+            result_parts.append(f"  - {error}")
+        if len(errors) > 5:
+            result_parts.append(f"  ... and {len(errors) - 5} more errors")
+    
+    return "\n".join(result_parts)
 
 
 # Patient data integration
@@ -324,6 +525,102 @@ def link_article_to_condition(
         properties=properties,
         tool_context=tool_context
     )
+
+
+def bulk_link_articles_to_conditions(
+    links: list[dict[str, Any]],
+    tool_context: ToolContext = None
+) -> str:
+    """Link multiple research articles to conditions in a single operation.
+    
+    This is much more efficient than calling link_article_to_condition repeatedly
+    when you have many articles to link.
+    
+    Args:
+        links: List of link dictionaries, each containing:
+            - article_id (str): ID of the research article node
+            - condition_id (str): ID of the condition node
+            - relevance (str, optional): Type of relevance (default: 'related')
+            - confidence (float, optional): Confidence score (0.0 to 1.0)
+        tool_context: ADK tool context for state management
+        
+    Returns:
+        Confirmation message with count of links created
+        
+    Example:
+        links = [
+            {
+                "article_id": "article_12345",
+                "condition_id": "condition_diabetes",
+                "relevance": "treatment",
+                "confidence": 0.9
+            },
+            {
+                "article_id": "article_67890",
+                "condition_id": "condition_diabetes",
+                "relevance": "diagnosis",
+                "confidence": 0.85
+            }
+        ]
+        bulk_link_articles_to_conditions(links)
+    """
+    graph = _get_graph(tool_context)
+    
+    relationships = []
+    errors = []
+    
+    for i, link in enumerate(links):
+        try:
+            # Validate required fields
+            if 'article_id' not in link:
+                errors.append(f"Link {i}: Missing required field 'article_id'")
+                continue
+            if 'condition_id' not in link:
+                errors.append(f"Link {i}: Missing required field 'condition_id'")
+                continue
+            
+            article_id = link['article_id']
+            condition_id = link['condition_id']
+            relevance = link.get('relevance', 'related')
+            confidence = link.get('confidence')
+            
+            # Check if nodes exist
+            if article_id not in graph:
+                errors.append(f"Link {i}: Article node '{article_id}' does not exist")
+                continue
+            if condition_id not in graph:
+                errors.append(f"Link {i}: Condition node '{condition_id}' does not exist")
+                continue
+            
+            # Build relationship
+            properties = {'relevance': relevance}
+            if confidence is not None:
+                properties['confidence'] = confidence
+            
+            relationships.append({
+                'source_id': article_id,
+                'target_id': condition_id,
+                'relationship_type': 'STUDIES',
+                'properties': properties
+            })
+            
+        except Exception as e:
+            errors.append(f"Link {i}: {str(e)}")
+    
+    # Use bulk_add_relationships to add all at once
+    if relationships:
+        result = bulk_add_relationships(relationships, tool_context)
+        
+        if errors:
+            result += f"\n\nWarnings encountered:\n"
+            for error in errors[:5]:
+                result += f"  - {error}\n"
+            if len(errors) > 5:
+                result += f"  ... and {len(errors) - 5} more warnings\n"
+        
+        return result
+    else:
+        return f"No valid article-condition links created. Errors:\n" + "\n".join(errors)
 
 
 def add_clinical_trial(
@@ -668,6 +965,139 @@ def check_node_completeness(node_id: str, tool_context: ToolContext = None) -> s
     completeness['is_complete'] = len(completeness['issues']) == 0
     
     return json.dumps(completeness, indent=2)
+
+
+def bulk_check_node_completeness(
+    node_ids: Optional[list[str]] = None,
+    node_type_filter: Optional[str] = None,
+    tool_context: ToolContext = None
+) -> str:
+    """Check completeness for multiple nodes at once.
+    
+    This is much more efficient than calling check_node_completeness repeatedly.
+    If no node_ids are provided, checks all nodes (optionally filtered by type).
+    
+    Args:
+        node_ids: Optional list of specific node IDs to check. If None, checks all nodes.
+        node_type_filter: Optional filter to check only nodes of specific type (e.g., 'condition', 'medication')
+        tool_context: ADK tool context for state management
+        
+    Returns:
+        JSON string with completeness analysis for all checked nodes
+        
+    Example:
+        # Check specific nodes
+        bulk_check_node_completeness(node_ids=['condition_diabetes', 'medication_metformin'])
+        
+        # Check all condition nodes
+        bulk_check_node_completeness(node_type_filter='condition')
+        
+        # Check all nodes
+        bulk_check_node_completeness()
+    """
+    graph = _get_graph(tool_context)
+    
+    if graph.number_of_nodes() == 0:
+        return "Error: Knowledge graph not initialized."
+    
+    # Determine which nodes to check
+    if node_ids is not None:
+        nodes_to_check = node_ids
+    elif node_type_filter is not None:
+        nodes_to_check = [n for n in graph.nodes() if graph.nodes[n].get('node_type') == node_type_filter]
+    else:
+        nodes_to_check = list(graph.nodes())
+    
+    # Check each node
+    results = []
+    summary_stats = {
+        'total_checked': 0,
+        'complete_nodes': 0,
+        'nodes_with_issues': 0,
+        'nodes_with_suggestions': 0,
+        'issues_by_type': {},
+        'suggestions_by_type': {}
+    }
+    
+    for node_id in nodes_to_check:
+        if node_id not in graph:
+            results.append({
+                'node_id': node_id,
+                'error': f"Node '{node_id}' not found in graph"
+            })
+            continue
+        
+        node_data = graph.nodes[node_id]
+        node_type = node_data.get('node_type', 'unknown')
+        
+        node_result = {
+            'node_id': node_id,
+            'node_type': node_type,
+            'label': node_data.get('label'),
+            'has_label': bool(node_data.get('label')),
+            'property_count': len(node_data),
+            'incoming_edges': graph.in_degree(node_id),
+            'outgoing_edges': graph.out_degree(node_id),
+            'issues': [],
+            'suggestions': []
+        }
+        
+        # Type-specific validation
+        if node_type == 'patient':
+            if not node_data.get('name'):
+                node_result['issues'].append("Patient node missing 'name' property")
+            if graph.out_degree(node_id) == 0:
+                node_result['suggestions'].append("Patient has no conditions or medications linked")
+        
+        elif node_type == 'condition':
+            if not node_data.get('icd_code'):
+                node_result['suggestions'].append("Condition missing ICD code")
+            if graph.in_degree(node_id) == 0:
+                node_result['issues'].append("Condition not linked to any patient")
+        
+        elif node_type == 'medication':
+            if not node_data.get('dosage'):
+                node_result['suggestions'].append("Medication missing dosage information")
+            if graph.in_degree(node_id) == 0:
+                node_result['issues'].append("Medication not linked to any patient")
+        
+        elif node_type == 'research_article':
+            if not node_data.get('authors'):
+                node_result['suggestions'].append("Research article missing authors")
+            if not node_data.get('url'):
+                node_result['suggestions'].append("Research article missing URL")
+            if graph.out_degree(node_id) == 0:
+                node_result['issues'].append("Research article not linked to any conditions")
+        
+        elif node_type == 'clinical_trial':
+            if not node_data.get('phase'):
+                node_result['suggestions'].append("Clinical trial missing phase information")
+            if not node_data.get('status'):
+                node_result['suggestions'].append("Clinical trial missing status")
+            if graph.out_degree(node_id) == 0:
+                node_result['suggestions'].append("Clinical trial not linked to any conditions")
+        
+        node_result['is_complete'] = len(node_result['issues']) == 0
+        results.append(node_result)
+        
+        # Update summary stats
+        summary_stats['total_checked'] += 1
+        if node_result['is_complete']:
+            summary_stats['complete_nodes'] += 1
+        if node_result['issues']:
+            summary_stats['nodes_with_issues'] += 1
+            summary_stats['issues_by_type'][node_type] = summary_stats['issues_by_type'].get(node_type, 0) + 1
+        if node_result['suggestions']:
+            summary_stats['nodes_with_suggestions'] += 1
+            summary_stats['suggestions_by_type'][node_type] = summary_stats['suggestions_by_type'].get(node_type, 0) + 1
+    
+    # Build result
+    output = {
+        'summary': summary_stats,
+        'nodes': results
+    }
+    
+    return json.dumps(output, indent=2)
 
 
 def analyze_graph_connectivity(tool_context: ToolContext = None) -> str:
