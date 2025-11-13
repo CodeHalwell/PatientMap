@@ -26,36 +26,60 @@ instruction: |
   - Evidence-based best practices
   - Clinical trial data
 
-  **Enrichment Workflow - For EACH research finding:**
+  **CRITICAL EFFICIENCY RULES - MINIMIZE API CALLS:**
+  - **ALWAYS batch multiple items into single bulk operations**
+  - **NEVER call the same function multiple times in a row** - collect all items first, then make ONE bulk call
+  - You have research findings for MULTIPLE topics - process them ALL together in single bulk operations
+  - Example: If you have 10 research articles across different topics, add ALL 10 in ONE call to bulk_add_nodes
 
-  1. **Add Research Articles (Use bulk_add_nodes):**
-     - Use `bulk_add_nodes` for adding research articles (can handle single or multiple)
-       * Prepare a list of node dictionaries with node_id, node_type='research_article', label, and properties
-       * For a single article, use a list with one item: [{"node_id": "article_123", "node_type": "research_article", "label": "Study Title", "properties": {...}}]
-       * For multiple articles, include all in the same list
+  **Enrichment Workflow - Process ALL Research Findings Together:**
+
+  1. **Add ALL Research Articles at Once (ONE bulk_add_nodes call):**
+     - **Collect ALL articles from ALL research topics first**
+     - Then make ONE call to `bulk_add_nodes` with the complete list
+     - Example: If research findings contain 15 articles total, prepare a list with ALL 15 nodes:
+       ```
+       bulk_add_nodes(nodes=[
+         {"node_id": "article_001", "node_type": "research_article", "label": "Study on Diabetes", "properties": {...}},
+         {"node_id": "article_002", "node_type": "research_article", "label": "Study on Hypertension", "properties": {...}},
+         ... (all 15 articles) ...
+       ])
+       ```
      - Include in properties: title, authors, publication_date, journal, url, abstract, keywords
      - Extract actionable clinical recommendations
-     - Example for clinical trials: node_type='clinical_trial' with properties like trial_id, phase, status
+     - For clinical trials: use node_type='clinical_trial' with properties like trial_id, phase, status
 
-  2. **Link Articles to Conditions (Use bulk_link_articles_to_conditions):**
-     - Use `bulk_link_articles_to_conditions` for linking (can handle single or multiple links)
-       * Prepare a list of link dictionaries with article_id, condition_id, relevance, confidence
-       * For a single link: [{"article_id": "article_123", "condition_id": "condition_diabetes", "relevance": "treatment", "confidence": 0.9}]
-       * For multiple links: include all in the same list
+  2. **Link ALL Articles to Conditions at Once (ONE bulk_link_articles_to_conditions call):**
+     - **Collect ALL article-to-condition links across ALL topics first**
+     - Then make ONE call to `bulk_link_articles_to_conditions` with the complete list
+     - Example: If you have 25 links total across all conditions:
+       ```
+       bulk_link_articles_to_conditions(links=[
+         {"article_id": "article_001", "condition_id": "condition_diabetes", "relevance": "treatment", "confidence": 0.9},
+         {"article_id": "article_001", "condition_id": "condition_hypertension", "relevance": "related", "confidence": 0.7},
+         ... (all 25 links) ...
+       ])
+       ```
      - Relevance types: "treatment", "diagnosis", "prognosis", "related"
      - Link drug interaction studies to relevant medication nodes
      - Confidence score: 0.0 to 1.0 (optional)
 
-  3. **Create Evidence-Based Relationships (Use bulk_add_relationships):**
-     - Use `bulk_add_relationships` for all relationship creation (can handle single or multiple)
-       * Prepare a list of relationship dictionaries with source_id, target_id, relationship_type, properties
-       * For a single relationship: [{"source_id": "nodeA", "target_id": "nodeB", "relationship_type": "RELATED_TO", "properties": {...}}]
-       * For multiple relationships: include all in the same list
-     - Examples:
-       * Condition A "increases_risk_of" Condition B (comorbidity evidence)
-       * Medication X "requires_monitoring" Lab Test Y (safety protocols)
-       * Condition + Medication "associated_with" Adverse Effect (side effect data)
-       * Research Article "supports" Treatment Recommendation
+  3. **Create ALL Evidence-Based Relationships at Once (ONE bulk_add_relationships call):**
+     - **Collect ALL relationships across ALL research findings first**
+     - Then make ONE call to `bulk_add_relationships` with the complete list
+     - Example: If you identified 30 relationships across all research:
+       ```
+       bulk_add_relationships(relationships=[
+         {"source_id": "condition_diabetes", "target_id": "condition_cardiovascular", "relationship_type": "INCREASES_RISK_OF", "properties": {"evidence": "..."}},
+         {"source_id": "medication_metformin", "target_id": "lab_test_b12", "relationship_type": "REQUIRES_MONITORING", "properties": {"frequency": "annual"}},
+         ... (all 30 relationships) ...
+       ])
+       ```
+     - Common relationship types:
+       * Condition A "INCREASES_RISK_OF" Condition B (comorbidity evidence)
+       * Medication X "REQUIRES_MONITORING" Lab Test Y (safety protocols)
+       * Medication + Condition "ASSOCIATED_WITH" Adverse Effect (side effect data)
+       * Research Article "SUPPORTS" Treatment Recommendation
 
   5. **Verify Integration:**
      - Use `find_related_research` to check what research is connected to each condition
@@ -70,11 +94,14 @@ instruction: |
   - Add temporal context (recent studies vs. older guidelines)
 
   **Loop Behavior:**
-  - Process ALL research findings systematically
-  - Don't rush - ensure each article/trial is properly integrated
-  - After processing each major research area, use `export_graph_summary` to review progress
+  - **FIRST ITERATION: Process ALL research findings in ONE go using bulk operations**
+    * Read through ALL research findings before making any tool calls
+    * Prepare complete lists for bulk_add_nodes, bulk_link_articles_to_conditions, and bulk_add_relationships
+    * Make 3 total tool calls: one for nodes, one for links, one for relationships
+  - After bulk operations, use `export_graph_summary` to verify everything was added
   - **CRITICAL: DO NOT call save_graph_to_disk or export_graph_as_cytoscape_json during iterations**
   - The checker will validate your work after each iteration
+  - If checker provides feedback, address it in next iteration
   - Continue enriching the graph until the checker calls exit_loop
 
   **Completion - ONLY When Checker Exits Loop:**
