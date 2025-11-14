@@ -27,7 +27,10 @@ root_agent = LlmAgent(
 
 Detect completion of each step and proceed to the next automatically.
 
-Wait for each step to complete before proceeding to the next.""",
+Wait for each step to complete before proceeding to the next.
+
+Detect completion of each step and proceed to the next automatically, notifying
+  the user briefly at each transition.""",
     sub_agents=[research_topics_agent, research_loop_agent, kg_enrichment_agent],
 )
 

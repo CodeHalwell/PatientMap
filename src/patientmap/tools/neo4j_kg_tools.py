@@ -534,6 +534,71 @@ def neo4j_bulk_link_articles_to_conditions(
             return "Error: Failed to create links"
 
 
+def neo4j_bulk_link_articles_to_medications(
+    links: list[dict[str, Any]],
+    tool_context: ToolContext = None
+) -> str:
+    """Link multiple research articles to medications in Neo4j efficiently.
+    
+    Uses Cypher UNWIND for batch processing. Creates INFORMS_MEDICATION_MANAGEMENT
+    relationships from research articles to medication nodes.
+    
+    Args:
+        links: List of link dictionaries, each containing:
+            - article_id (str): ID of the research article node
+            - medication_id (str): ID of the medication node (e.g., "M001")
+            - medication_name (str, optional): Name of the medication for reference
+            - relevance (str, optional): Type of relevance (e.g., 'efficacy', 'safety', 'interactions', 'dosing')
+            - confidence (float, optional): Confidence score (0.0 to 1.0)
+            - notes (str, optional): Additional context about the link
+        tool_context: ADK tool context for state management
+        
+    Returns:
+        Confirmation message with count of links created
+        
+    Example:
+        neo4j_bulk_link_articles_to_medications(links=[
+            {
+                "article_id": "RA_Topic_02",
+                "medication_id": "M001",
+                "medication_name": "Lisinopril",
+                "relevance": "interactions",
+                "confidence": 0.9,
+                "notes": "Drug-drug interaction with NSAIDs"
+            },
+            {
+                "article_id": "RA_Topic_02",
+                "medication_id": "M002",
+                "medication_name": "Metoprolol",
+                "relevance": "safety",
+                "confidence": 0.85
+            }
+        ])
+    """
+    with Neo4jClient.get_session(tool_context) as session:
+        query = """
+            UNWIND $links AS link
+            MATCH (a:ResearchArticle {article_id: link.article_id})
+            MATCH (m:Medication {id: link.medication_id})
+            MERGE (a)-[r:INFORMS_MEDICATION_MANAGEMENT]->(m)
+            SET r.medication_name = link.medication_name,
+                r.relevance = coalesce(link.relevance, 'general'),
+                r.confidence = link.confidence,
+                r.notes = link.notes,
+                r.created_at = datetime()
+            RETURN count(r) AS links_created
+        """
+        
+        result = session.run(query, links=links)
+        record = result.single()
+        
+        if record:
+            count = record['links_created']
+            return f"Successfully created {count} article-medication links in Neo4j from {len(links)} input records"
+        else:
+            return "Error: Failed to create medication links"
+
+
 # Query Operations
 
 def neo4j_get_patient_overview(

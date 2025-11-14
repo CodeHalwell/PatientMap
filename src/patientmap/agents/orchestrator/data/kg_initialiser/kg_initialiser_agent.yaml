@@ -1,6 +1,6 @@
 agent_id: kgi01
 agent_name: Knowledge_graph_initialiser_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-2.5-pro'
 description: |
   An agent that organises the building and validation of a clinical knowledge graph.
   Coordinates the sequential workflow of planning and iterative building/validation.

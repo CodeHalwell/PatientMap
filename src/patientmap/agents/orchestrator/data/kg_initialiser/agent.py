@@ -55,8 +55,9 @@ kg_initialiser_agent = LlmAgent(
 - Provide progress updates between phases
 
 **Completion:**
-Once both phases complete successfully, provide a summary stating:
-"KNOWLEDGE GRAPH INITIALIZATION COMPLETE: Patient knowledge graph planned, built, and validated successfully."
+  Detect completion of each step and proceed to the next automatically, notifying
+  the user briefly at each transition. Once the graph has been completed, the process can
+  move onto the next step"
 """,
     sub_agents=[planning_agent, loop_agent],
 )

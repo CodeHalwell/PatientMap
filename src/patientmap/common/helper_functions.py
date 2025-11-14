@@ -13,7 +13,7 @@ retry_config = HttpRetryOptions(
 async def handle_tool_error(
     *,
     tool: BaseTool,
-    tool_args: dict[str, Any],
+    args: dict[str, Any],
     tool_context: ToolContext,
     error: Exception,
 ) -> Optional[dict]:

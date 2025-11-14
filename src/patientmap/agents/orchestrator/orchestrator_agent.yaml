@@ -37,6 +37,15 @@ instruction: |
      - Route to appropriate medical specialists
      - Generate clinical recommendations
      - Provide patient-specific guidance
+
+  6. Delegate to the report agent to compile a comprehensive report
+     - Include data sources, research findings, and clinical recommendations
+  7. Upon final completion, provide the user with a summary of the entire process, including:
+     * Key data points collected
+      * Major research findings
+      * Clinical recommendations provided
+  8. Thank the user for utilizing the WellInformed system
+  9. End the conversation politely
   
   **Coordination Rules:**
   - Execute phases SEQUENTIALLY - each must complete before the next begins
@@ -45,6 +54,7 @@ instruction: |
     * data_manager_agent: "data input pipeline is now complete"
     * research_agent: "RESEARCH COMPLETE: All X topics"
     * clinical_agent: final clinical summary
+    * report_agent: final report summary
   - Provide clear progress updates to the user between phases
   - If any phase fails, report the issue and do not proceed to next phase
 tools: []

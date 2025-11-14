@@ -1,6 +1,6 @@
 agent_id: dma01
 agent_name: data_manager_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-2.5-pro'
 description: |
   This agent is responsible for managing the data input workflow into the system.
   It coordinates the data_agent to gather information from users, then tasks the kg_initialiser_agent
@@ -40,6 +40,7 @@ instruction: |
   - Your sub-agents will handle their work; you coordinate the sequence
   - After completion, STOP and yield control to orchestrator
 
-  Detect completion of each step and proceed to the next automatically.
+  Detect completion of each step and proceed to the next automatically, notifying
+  the user briefly at each transition.
 tools: []
 sub_agents: [data_gatherer_agent, Knowledge_graph_initialiser_agent]

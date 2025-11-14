@@ -51,25 +51,7 @@ app = App(
         compaction_interval=3,
         overlap_size=1
     ),
+    plugins=[LoggingPlugin()],  # Plugins work with web server
 )
 
-if __name__ == "__main__":
-    # For standalone testing
-    from google.adk import Runner
-    from google.adk.sessions import InMemorySessionService
-    from google.adk.memory import InMemoryMemoryService
     
-    session_service = InMemorySessionService()
-    memory_service = InMemoryMemoryService()
-    
-    runner = Runner(
-        app=app,
-        session_service=session_service,
-        memory_service=memory_service,
-        plugins=[LoggingPlugin()],
-    )
-    
-    runner.run_async(
-        user_id="test_user",
-        session_id="test_session"
-    )

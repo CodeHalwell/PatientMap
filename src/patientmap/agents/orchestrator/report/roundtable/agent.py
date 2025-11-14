@@ -13,6 +13,7 @@ try:
     review_agent_1_config = AgentConfig(str(current_dir / "review_agent_1.yaml")).get_agent()
     review_agent_2_config = AgentConfig(str(current_dir / "review_agent_2.yaml")).get_agent()
     review_agent_3_config = AgentConfig(str(current_dir / "review_agent_3.yaml")).get_agent()
+    roundtable_agent_config = AgentConfig(str(current_dir / "roundtable_agent.yaml")).get_agent()
 except FileNotFoundError as e:
     raise RuntimeError(f"Review agent configuration file not found at {current_dir}") from e
 
@@ -44,10 +45,10 @@ review_agent_3 = LlmAgent(
 )
 
 root_agent = LlmAgent(
-    name="roundtable_report_agent",
-    description="Roundtable Report Agent coordinating multiple review agents for comprehensive report generation.",
-    model=Gemini(model_name="gemini-2.5-pro", retry_options=retry_config),
-    instruction="You are the Roundtable Report Agent coordinating multiple review agents to generate a comprehensive patient report.",
+    name=roundtable_agent_config.agent_name,
+    description=roundtable_agent_config.description,
+    model=Gemini(model_name=roundtable_agent_config.model, retry_options=retry_config),
+    instruction=roundtable_agent_config.instruction,
     sub_agents=[review_agent_1, review_agent_2, review_agent_3],
     tools=[],
     on_tool_error_callback=handle_tool_error,

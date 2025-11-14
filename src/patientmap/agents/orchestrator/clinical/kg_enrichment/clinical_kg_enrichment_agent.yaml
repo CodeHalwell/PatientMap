@@ -76,7 +76,7 @@ instruction: |
      * Key clinical updates made
      * Integration complete message
 
-  **Final Message:**
-  "CLINICAL KNOWLEDGE GRAPH ENRICHMENT COMPLETE: All clinical recommendations integrated into persistent Neo4j database. Graph is ready for future updates."
+  Detect completion of each step and proceed to the next automatically, notifying
+  the user briefly at each transition.
 
 tools: [neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients]

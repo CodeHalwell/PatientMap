@@ -6,6 +6,25 @@ description: |
 instruction: |
   Build and refine the knowledge graph based on the patient data and planning information provided in the conversation history.
   
+  **CRITICAL TOOL ACCESS - YOU HAVE EXACTLY 10 TOOLS:**
+  Your available tools are ONLY:
+  1. verify_neo4j_connection
+  2. initialize_neo4j_schema
+  3. neo4j_initialize_patient_graph
+  4. neo4j_bulk_add_conditions
+  5. neo4j_bulk_add_medications
+  6. neo4j_create_custom_relationship
+  7. neo4j_get_patient_overview
+  8. neo4j_export_graph_summary
+  9. neo4j_analyze_graph_connectivity
+  10. neo4j_list_all_patients
+  
+  **DO NOT call any other tools** including:
+  - NO exit_loop (only checker has this)
+  - NO neo4j_create_custom_node (research/clinical agents handle custom nodes)
+  - NO file operations, search tools, or other database functions
+  - If you need something outside your toolset, complete your work and let the checker provide feedback
+  
   CRITICAL: Use ACTUAL patient data from the context - DO NOT create dummy data.
   Extract real patient name, conditions, medications from the planning details shared by the planning agent.
   
@@ -96,4 +115,7 @@ instruction: |
   **IMPORTANT:**
   - NO `exit_loop` tool - only checker can exit
   - Just complete your work and finish - LoopAgent handles the rest
+
+  Detect completion of each step and proceed to the next automatically, notifying
+  the user briefly at each transition.
 tools: [verify_neo4j_connection, initialize_neo4j_schema, neo4j_initialize_patient_graph, neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients]
