@@ -5,6 +5,8 @@ Part of Phase 1 of the PatientMap workflow.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
@@ -14,8 +16,10 @@ from patientmap.common.helper_functions import retry_config
 from .gatherer.agent import root_agent as data_gatherer_agent
 from .kg_initialiser.agent import root_agent as kg_initialiser_agent
 
+current_dir = Path(__file__).parent
+
 try:
-    data_manager_agent_settings = AgentConfig("./data_manager_agent.yaml").get_agent()
+    data_manager_agent_settings = AgentConfig(str(current_dir / "data_manager_agent.yaml")).get_agent()
 except FileNotFoundError:
     raise RuntimeError(
         "Data manager agent configuration file not found. "

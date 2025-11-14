@@ -11,27 +11,21 @@ from google.adk.models.google_llm import Gemini
 from google.adk.tools import exit_loop
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
-from patientmap.tools.kg_tools import (
-    validate_graph_structure,
-    check_node_completeness,
-    bulk_check_node_completeness,
-    analyze_graph_connectivity,
-    list_all_nodes_by_type,
-    get_node_relationships,
-    export_graph_summary,
-    load_graph_from_disk,
-    save_graph_to_disk,
-    export_graph_as_cytoscape_json,
+from patientmap.tools.neo4j_kg_tools import (
+    neo4j_get_patient_overview,
+    neo4j_find_related_research,
+    neo4j_export_graph_summary,
+    neo4j_analyze_graph_connectivity,
+    neo4j_list_all_patients,
 )
 
 # Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "knowledge" / "kg_checker_agent.yaml"
-
+current_dir = Path(__file__).parent
 try:
-    config = AgentConfig(str(config_path)).get_agent()
+    config = AgentConfig(str(current_dir / "kg_checker_agent.yaml")).get_agent()
     checker_settings = config
 except FileNotFoundError:
-    raise RuntimeError(f"Checker config not found at {config_path}")
+    raise RuntimeError(f"Checker config not found at {current_dir / 'kg_checker_agent.yaml'}")
 
 # Create logic checker agent
 logic_checker_agent = LlmAgent(
@@ -43,16 +37,11 @@ logic_checker_agent = LlmAgent(
     ),
     instruction=checker_settings.instruction,
     tools=[
-        validate_graph_structure,
-        check_node_completeness,
-        bulk_check_node_completeness,
-        analyze_graph_connectivity,
-        list_all_nodes_by_type,
-        get_node_relationships,
-        export_graph_summary,
-        load_graph_from_disk,
-        save_graph_to_disk,
-        export_graph_as_cytoscape_json,
+        neo4j_get_patient_overview,
+        neo4j_find_related_research,
+        neo4j_export_graph_summary,
+        neo4j_analyze_graph_connectivity,
+        neo4j_list_all_patients,
         exit_loop,  # Critical: allows checker to end loop
     ],
 )

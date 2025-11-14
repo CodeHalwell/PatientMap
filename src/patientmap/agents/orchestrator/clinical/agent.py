@@ -5,6 +5,8 @@ Sequences: clinical analysis loop → knowledge graph enrichment
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk.agents import LoopAgent, LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.helper_functions import retry_config
@@ -13,6 +15,14 @@ from patientmap.common.helper_functions import retry_config
 from .manager.agent import root_agent as clinical_manager
 from .checker.agent import root_agent as checker_agent
 from .kg_enrichment.agent import root_agent as clinical_kg_enrichment_agent
+from patientmap.common.config import AgentConfig
+
+current_dir = Path(__file__).parent
+
+try:
+    clinical_config = AgentConfig(str(current_dir / "clinical_coordinator.yaml")).get_agent()
+except FileNotFoundError:
+    raise RuntimeError(f"Clinical agent config not found at {current_dir / 'clinical_coordinator.yaml'}")
 
 # Clinical analysis loop (manager + checker)
 clinical_loop_agent = LoopAgent(
@@ -24,24 +34,10 @@ clinical_loop_agent = LoopAgent(
 
 # Clinical coordinator that sequences analysis → KG enrichment
 clinical_coordinator = LlmAgent(
-    name="clinical_coordinator",
-    description="Coordinates clinical workflow: analysis → validation → knowledge graph enrichment",
-    model=Gemini(model_name='gemini-2.5-flash', retry_options=retry_config),
-    instruction="""Execute these steps in order:
-
-1. **Clinical Analysis**: Delegate to clinical_analysis_loop
-   - Specialist consultations and recommendations
-   - Clinical validation and accuracy checking
-   - Wait for loop completion
-
-2. **Knowledge Graph Integration**: Delegate to clinical_knowledge_graph_enrichment_agent
-   - Integrate all clinical recommendations into patient knowledge graph
-   - Add treatment plans, monitoring protocols, and clinical alerts
-   - Save enriched graph to disk
-   - Wait for completion message
-
-Detect completion of each step and proceed to the next automatically.
-Provide brief status updates between phases.""",
+    name=clinical_config.agent_name,
+    description=clinical_config.description,
+    model=Gemini(model_name=clinical_config.model, retry_options=retry_config),
+    instruction=clinical_config.instruction,
     sub_agents=[clinical_loop_agent, clinical_kg_enrichment_agent],
 )
 

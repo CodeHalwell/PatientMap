@@ -5,6 +5,8 @@ Coordinates analysis across 16 clinical specialties.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk import Agent
 from google.adk.tools import AgentTool
 from google.adk.models.google_llm import Gemini
@@ -40,11 +42,13 @@ retry_config = types.HttpRetryOptions(
     http_status_codes=[429, 500, 503, 504],  # Retry on these HTTP errors
 )
 
+current_dir = Path(__file__).parent
+
 try:
-    config = AgentConfig("./clinical_agent.yaml").get_agent()
+    config = AgentConfig(str(current_dir / "clinical_agent.yaml")).get_agent()
     clinical_settings = config
 except (FileNotFoundError) as e:
-    raise RuntimeError("Clinical agent config not found. Please ensure clinical_agent.yaml exists in the current directory.") from e
+    raise RuntimeError(f"Clinical agent config not found at {current_dir / 'clinical_agent.yaml'}") from e
 
 # Create clinical manager with all specialists as tools
 clinical_manager = Agent(

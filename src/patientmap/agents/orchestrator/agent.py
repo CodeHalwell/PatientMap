@@ -24,10 +24,12 @@ from .research.agent import root_agent as research_agent
 from .clinical.agent import root_agent as clinical_agent
 from .report.agent import root_agent as agent_report
 
+current_dir = Path(__file__).parent
+
 try:
-    orchestrator_settings = AgentConfig("./orchestrator_agent.yaml").get_agent()
+    orchestrator_settings = AgentConfig(str(current_dir / "orchestrator_agent.yaml")).get_agent()
 except FileNotFoundError:
-    raise RuntimeError("Orchestrator agent configuration file not found. Please create the file at '.profiles/orchestrator_agent.yaml'.")
+    raise RuntimeError(f"Orchestrator agent configuration file not found at {current_dir / 'orchestrator_agent.yaml'}")
 
 # Create root agent
 root_agent = Agent(

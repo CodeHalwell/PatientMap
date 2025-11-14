@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
 
+current_dir = Path(__file__).parent
+
 try:
-    report_agent_config = AgentConfig("./final_report_agent.yaml").get_agent()
+    report_agent_config = AgentConfig(str(current_dir / "final_report_agent.yaml")).get_agent()
 except FileNotFoundError as e:
-    raise RuntimeError(f"Report agent configuration file not found: {e.filename}") from e
+    raise RuntimeError(f"Report agent configuration file not found at {current_dir / 'final_report_agent.yaml'}") from e
 
 root_agent = LlmAgent(
     name=report_agent_config.agent_name,

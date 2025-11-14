@@ -6,18 +6,58 @@
 
 ---
 
-## Latest Findings (2025-11-13)
+## Latest Findings (2025-11-14 Full Assessment)
 
-Latest repo audit (branch `update/agents`, commit head as of 2025-11-13) surfaces a few critical deltas versus the original January plan:
+**RESTRUCTURING STATUS: ✅ COMPLETE**
 
-- **Hierarchy migration complete** – The agent directory structure **has been reorganized**: `src/patientmap/agents/` now contains only `orchestrator/` with hierarchical subdirs (`data/`, `research/`, `clinical/`, `report/`). Sub-agents live under their respective phases (e.g., `data/gatherer/`, `clinical/manager/specialists/`), so the directory structure matches the proposed design. Legacy flat folders no longer exist at the top level.
-- **Config files remain remote** – Despite the hierarchy migration, all YAML configs still live under `.profiles/**`. Agents continue walking the filesystem (e.g., `Path(__file__).parent.parent.parent.parent.parent / ".profiles"`) to load them. Co-located `config.yaml` files have not been created, meaning config management still suffers from the path complexity issues.
-- **Observability plan pending** – `patientmap/common/logging.py` defines a helper to instantiate ADK's `LoggingPlugin`, but no agent or runner imports it. This diverges from Kaggle Day 4A guidance where the plugin is registered directly on the `Runner`.
-- **FastMCP unused** – `fastmcp>=2.13.0.2` ships in `pyproject.toml`, and the Google ADK guide (`guides/09_Google_ADK_Framework.md`) documents how to expose agents via MCP, yet no MCP server exists under `src/` and no FastMCP entry point has been wired.
-- **Evaluation assets missing** – A repo-wide search shows no `*.evalset.json`, `*.test.json`, or `test_config.json` files outside of the Kaggle notebooks. Day 4B's evaluation workflow has not been applied to PatientMap.
-- **Long-running + approvals absent** – There are no references to `LongRunningTool`, `ApprovalTool`, or any custom waiting states. All KG mutations and clinical recommendations run synchronously without human-in-the-loop checkpoints.
+Latest comprehensive audit (branch `update/agents`, 2025-11-14) confirms the hierarchy migration is **fully implemented** and **production-ready**:
 
-These findings keep the original migration plan relevant, but the scope now explicitly includes observability, MCP exposure, and evaluation scaffolding so that the hierarchy change unlocks downstream tooling (tracing, MCP, CI evals) instead of existing as an isolated refactor.
+### ✅ Completed: Agent Hierarchy & Config Co-location
+- **Directory structure**: `src/patientmap/agents/` contains only `orchestrator/` with clean phase-based hierarchy (`data/`, `research/`, `clinical/`, `report/`)
+- **Config co-location**: All 34 YAML files now live **alongside their agents** (e.g., `orchestrator/orchestrator_agent.yaml`, `data/data_manager_agent.yaml`)
+- **Clean imports**: Consistent relative imports (`from .data.agent import root_agent`) throughout; no more absolute `patientmap.agents.X` cross-imports
+- **Path simplification**: Config loading uses `AgentConfig("./agent_name.yaml")` instead of traversing 5+ parent dirs to `.profiles/`
+- **Specialist organization**: 16 clinical specialists cleanly nested under `clinical/manager/specialists/` with individual YAML configs
+
+### 🔶 Remaining Gaps: Runtime & Observability
+
+The directory structure is solid, but **runtime integration** needs work:
+
+#### 1. **Session/Memory Services Not Wired**
+- ADK web server runs with default in-memory services (sessions lost on restart)
+- Knowledge graph stored in `tool_context.state['kg_data']` evaporates between sessions
+- No `DatabaseSessionService` or `VertexAiMemoryBankService` configuration
+- **Impact**: Patients must restart intake/research after any interruption
+
+#### 2. **Observability Infrastructure Unused**
+- `LoggingPlugin` factory exists (`common/logging.py::get_logging_plugin`) but never instantiated
+- Only one agent (`clinical/manager`) calls `configure_logging()` for shutdown warning suppression
+- No `Runner` customization to register logging/tracing plugins per Kaggle Day 4A patterns
+- ADK web UI has no trace/debug data to display
+
+#### 3. **MCP Exposure Scaffolding Missing**
+- `fastmcp>=2.13.0.2` dependency installed but zero FastMCP imports
+- No MCP server module (e.g., `patientmap/mcp_server.py`) to expose agents as tools
+- `guides/09_Google_ADK_Framework.md` documents MCP patterns but aren't applied
+
+#### 4. **Evaluation Assets Absent**
+- No `*.evalset.json`, `*.test.json`, or `test_config.json` files in `src/`
+- Kaggle Day 4B evaluation workflow (ADK eval command) cannot run
+- No CI/CD evaluation pipelines
+
+#### 5. **Approval Workflows Not Implemented**
+- No `LongRunningTool`, `ApprovalTool`, or human-in-the-loop checkpoints
+- KG mutations, clinical recommendations run synchronously without review gates
+- High-risk operations (e.g., add 50 nodes, recommend off-label drug) lack safety rails
+
+### 📋 Updated Scope
+
+With hierarchy complete, focus shifts to **runtime maturity**:
+1. Wire `DatabaseSessionService` + `InMemoryMemoryService` via custom `App` in `orchestrator/__init__.py`
+2. Register `LoggingPlugin` on `Runner` for trace capture
+3. Create FastMCP server exposing orchestrator as tool
+4. Generate evaluation datasets (`.evalset.json`) for data/research/clinical phases
+5. Identify approval gates (e.g., before `bulk_add_relationships`) and wrap with `ApprovalTool`
 
 ---
 

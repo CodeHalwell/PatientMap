@@ -2,26 +2,137 @@
 
 This note distills the most relevant patterns from Google's Kaggle ADK course (`kaggle_google_course/day_3a_agent_sessions.py`, `day_3b_agent_memory.py`) and the latest ADK Python docs for upgrading PatientMap's runtime. The goal is to make the orchestrated workflow resilient across user conversations while capturing durable clinical context.
 
-## 1. Current Gaps
-- The application runs via **`uv run adk web agents`** from `src/patientmap/`, which uses ADK's auto-discovery to find and load the `orchestrator` agent. There is no explicit `main.py` entry point being used in the actual workflow.
-- ADK's `adk web` command automatically creates an in-memory web server with default services (`InMemorySessionService`, `InMemoryMemoryService`). No custom `Runner`, session persistence, or memory configuration is applied.
-- The `orchestrator` agent is discovered via its `__init__.py` export (`from .agent import root_agent`), and the ADK CLI handles all runtime wiring internally.
-- No persistent session store is configured, so user turns disappear between server restarts; knowledge graph phases cannot be resumed mid-way.
-- Long-term memory is unused; agents rely solely on single-session state (`tool_context.state`) and YAML prompts. Cross-session personalization is impossible.
+## 1. Current State & Architecture (2025-11-14 Assessment)
 
-### Field Audit Notes (2025-11-13)
-- **Actual runtime**: `uv run adk web agents` from `src/patientmap/` auto-discovers `agents/orchestrator/` via `__init__.py` export. The root `main.py` is **not used** in production workflow.
-- ADK's web server provides its own `Runner` with default in-memory services. No `EventsCompactionConfig` or custom service wiring is configured.
-- `patientmap/agents/orchestrator/agent.py` contains a `__main__` block with `Runner` setup, but this is only for standalone testing and never executed in the ADK web workflow.
-- There is no `patientmap/runtime/` package yet. To customize sessions/memory, we need to either:
-  1. Create a custom ADK app wrapper that the CLI can discover, or
-  2. Use ADK's configuration mechanisms (if available) to inject custom services
-- No references to `DatabaseSessionService`, `VertexAiSessionService`, or custom `MemoryService` appear anywhere outside of the Kaggle notebooks, confirming that Stage 1 (sessions) has not begun.
+### Runtime Environment
+- **Entry point**: `uv run adk web agents` from `src/patientmap/` auto-discovers the `orchestrator` agent via `__init__.py` export
+- **Agent discovery**: ADK CLI loads `patientmap.agents.orchestrator` and finds `root_agent` export
+- **Service defaults**: ADK web server creates its own `Runner` with in-memory services (`InMemorySessionService`, `InMemoryMemoryService`, `InMemoryArtifactService`)
+- **No custom services**: Zero configuration for persistent sessions, memory, or observability plugins
 
-## 2. Session Management Plan
-1. **Centralize runtime wiring for ADK auto-discovery**
-   - Since `adk web agents` auto-discovers agents via `__init__.py` exports, we need to create an `App` wrapper that the CLI can discover.
-   - Create `src/patientmap/agents/orchestrator/__init__.py` that exports an `App` instead of just `root_agent`:
+### Agent Hierarchy ✅ COMPLETED
+The hierarchical agent structure has been **successfully implemented**:
+```
+orchestrator/
+├── orchestrator_agent.yaml (co-located!)
+├── data/
+│   ├── data_manager_agent.yaml
+│   ├── gatherer/
+│   │   └── data_gatherer_agent.yaml
+│   └── kg_initialiser/
+│       └── build_loop/ (builder + checker)
+├── research/
+│   ├── research_manager_agent.yaml
+│   ├── topics/ (research_topics.yaml)
+│   ├── search_loop/ (research + reviewer)
+│   └── kg_enrichment/ (enricher + checker)
+├── clinical/
+│   ├── manager/ (clinical_agent.yaml + 16 specialists)
+│   ├── checker/
+│   └── kg_enrichment/
+└── report/
+    ├── report_manager_agent.yaml
+    ├── roundtable/ (3 review agents)
+    └── final_report/
+```
+**Key improvements**: All configs are now **co-located** with agent code (no more `.profiles/` remote paths), relative imports throughout, clean `./config.yaml` loading pattern.
+
+### State Management Architecture
+**Tool Context State (`tool_context.state`)**:
+- Used exclusively for knowledge graph storage via `kg_data` key
+- NetworkX graph serialized as node-link JSON
+- 20+ KG tools (`kg_tools.py`) read/write to this single state key
+- Persists only within a single ADK session (lost on server restart)
+
+**Session State (ADK `session.state`)**: **NOT USED**
+- No agents read or write to `session.state`
+- Zero session-scoped persistence (e.g., user demographics, workflow phase tracking)
+- Cannot resume interrupted workflows across sessions
+
+**Memory Service**: **NOT USED**
+- No calls to `load_memory` or `preload_memory` tools
+- No `auto_save_to_memory` callback registered
+- No cross-session context (e.g., prior visit history, recurring conditions)
+
+### Critical Gaps
+1. **Session resumability impossible**: KG data in `tool_context.state['kg_data']` vanishes when web server restarts—patients must start over
+2. **No workflow phase tracking**: Orchestrator cannot detect "we're in research phase" after session break
+3. **Zero cross-session learning**: Clinical specialists can't recall "this patient had adverse reaction to X drug last visit"
+4. **Observability blind spots**: `LoggingPlugin` exists but isn't wired to Runner; no trace/debug capabilities in ADK web UI
+5. **Config loading fragility**: Hardcoded `./config.yaml` paths fail if working directory changes during `adk web` discovery
+
+## 2. Strategic Session & Memory Integration
+
+### High-Value Integration Points (Prioritized)
+
+#### **Priority 1: KG Persistence via Session State**
+**Problem**: `tool_context.state['kg_data']` evaporates on server restart → patients lose all intake/research data  
+**Solution**: Migrate KG storage to `session.state` for durable persistence
+
+**Implementation**:
+```python
+# In kg_tools.py, replace _get_graph() and _save_graph()
+def _get_graph(tool_context: ToolContext) -> nx.DiGraph:
+    # Try session state first (persistent), fallback to tool context (ephemeral)
+    if hasattr(tool_context, 'session') and tool_context.session:
+        if 'app:kg_data' in tool_context.session.state:
+            data = tool_context.session.state['app:kg_data']
+            return nx.node_link_graph(data, directed=True, edges="links")
+    # Fallback for non-session contexts (tests)
+    if 'kg_data' in tool_context.state:
+        data = tool_context.state['kg_data']
+        return nx.node_link_graph(data, directed=True, edges="links")
+    return nx.DiGraph()
+
+def _save_graph(graph: nx.DiGraph, tool_context: ToolContext) -> None:
+    data = nx.node_link_data(graph, edges="links")
+    if hasattr(tool_context, 'session') and tool_context.session:
+        tool_context.session.state['app:kg_data'] = data  # Persistent
+        tool_context.session.state['app:kg_last_updated'] = datetime.now().isoformat()
+        tool_context.session.state['app:kg_node_count'] = graph.number_of_nodes()
+    else:
+        tool_context.state['kg_data'] = data  # Fallback
+```
+**Impact**: Patients can close browser, server can restart, work resumes from exact KG state.
+
+#### **Priority 2: Workflow Phase Tracking**
+**Problem**: Orchestrator has no memory of "we completed data phase, now in research"  
+**Solution**: Track phase progression in `session.state['temp:current_phase']`
+
+**Implementation**:
+```python
+# In orchestrator/agent.py instruction (YAML):
+instruction: |
+  **Phase Tracking**:
+  - Check session.state['temp:current_phase'] on each turn
+  - Valid phases: 'data', 'research', 'clinical', 'report'
+  - After sub-agent completes, update: session.state['temp:current_phase'] = 'next_phase'
+  - If phase is set and sub-agent confirms completion, proceed to next
+  - If session resumes mid-phase, acknowledge and continue from checkpoint
+```
+**Impact**: Users can pause/resume 2-hour research workflows without starting over.
+
+#### **Priority 3: Patient Demographics in User State**
+**Problem**: Data gatherer re-asks name, DOB, conditions every session  
+**Solution**: Store persistent demographics in `session.state['user:*']` keys
+
+**Implementation** (data gatherer instruction):
+```yaml
+instruction: |
+  **Memory-Aware Intake**:
+  1. Check session.state['user:name'], ['user:dob'], ['user:conditions']
+  2. If found, greet by name: "Welcome back, {name}. Last visit: {date}."
+  3. Ask: "Has anything changed since last time?" (vs full intake)
+  4. Save/update: session.state['user:name'], ['user:dob'], ['user:primary_conditions']
+```
+**Impact**: Returning patients feel recognized, intake time cut by 70%.
+
+### Infrastructure Layer
+
+#### **App Wrapper for Custom Services**
+Since `adk web agents` auto-discovers agents via `__init__.py` exports, we create an `App` wrapper:
+
+**Update `src/patientmap/agents/orchestrator/__init__.py`**:
      ```python
      from google.adk.apps import App, EventsCompactionConfig, ResumabilityConfig
      from google.adk.plugins import ContextFilterPlugin

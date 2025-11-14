@@ -5,28 +5,31 @@ Uses bulk operations to add nodes and relationships based on plan.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
-from patientmap.tools.kg_tools import (
-    initialize_patient_graph,
-    bulk_add_nodes,
-    bulk_add_relationships,
-    delete_node,
-    delete_relationship,
-    merge_duplicate_nodes,
-    get_patient_overview,
-    export_graph_summary,
-    save_graph_to_disk,
-    export_graph_as_cytoscape_json,
-    validate_graph_structure,
+from patientmap.tools.neo4j_kg_tools import (
+    verify_neo4j_connection,
+    initialize_neo4j_schema,
+    neo4j_initialize_patient_graph,
+    neo4j_bulk_add_conditions,
+    neo4j_bulk_add_medications,
+    neo4j_create_custom_relationship,
+    neo4j_get_patient_overview,
+    neo4j_export_graph_summary,
+    neo4j_analyze_graph_connectivity,
+    neo4j_list_all_patients,
 )
 
+current_dir = Path(__file__).parent
+
 try:
-    builder_settings = AgentConfig("./kg_initialiser.yaml").get_agent()
+    builder_settings = AgentConfig(str(current_dir / "kg_initialiser.yaml")).get_agent()
 except FileNotFoundError:
-    raise RuntimeError("Builder config not found. Please ensure kg_initialiser.yaml exists in the current directory.")
+    raise RuntimeError(f"Builder config not found at {current_dir / 'kg_initialiser.yaml'}")
 
 # Create builder agent with KG tools
 build_agent = LlmAgent(
@@ -38,17 +41,17 @@ build_agent = LlmAgent(
     ),
     instruction=builder_settings.instruction,
     tools=[
-        initialize_patient_graph,
-        bulk_add_nodes,
-        bulk_add_relationships,
-        delete_node,
-        delete_relationship,
-        merge_duplicate_nodes,
-        get_patient_overview,
-        export_graph_summary,
-        save_graph_to_disk,
-        export_graph_as_cytoscape_json,
-        validate_graph_structure,
+        # Neo4j persistent graph database tools
+        verify_neo4j_connection,
+        initialize_neo4j_schema,
+        neo4j_initialize_patient_graph,
+        neo4j_bulk_add_conditions,  # Batch add conditions
+        neo4j_bulk_add_medications,  # Batch add medications
+        neo4j_create_custom_relationship,  # For TREATS_CONDITION links
+        neo4j_get_patient_overview,
+        neo4j_export_graph_summary,
+        neo4j_analyze_graph_connectivity,
+        neo4j_list_all_patients,
     ],
 )
 

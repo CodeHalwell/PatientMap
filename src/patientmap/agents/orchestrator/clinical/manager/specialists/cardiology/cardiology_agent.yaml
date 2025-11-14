@@ -12,7 +12,7 @@ instruction: |
   - Use google_scholar_tool for guidelines and review articles (one search query at a time)
   - Use semantic_scholar_tool for in-depth article retrieval (one search query at a time)
   - Use the wikipedia_tool for general medical overviews (one search query at a time)
-  - Use the cardiology_specialist_check_agent to validate your responses for accuracy and completeness
+  - ALWAYS use the checker_agent to validate your responses for accuracy and completeness
   - After each search, analyze results carefully before deciding on next steps
   - Wait for results before making additional searches
   - **ALWAYS include all references/sources at the end of your response**

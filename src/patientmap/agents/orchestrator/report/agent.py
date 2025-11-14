@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from google.adk import Agent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
@@ -7,11 +9,13 @@ from patientmap.common.helper_functions import handle_tool_error, retry_config
 from .roundtable.agent import root_agent as reporting_agent
 from .final_report.agent import root_agent as final_report_agent
 
+current_dir = Path(__file__).parent
+
 try:
-    report_manager_settings = AgentConfig("./report_manager_agent.yaml").get_agent()
+    report_manager_settings = AgentConfig(str(current_dir / "report_manager_agent.yaml")).get_agent()
 except FileNotFoundError:
     raise RuntimeError(
-        "Report manager agent config not found. Please ensure report_manager_agent.yaml exists in the current directory."
+        f"Report manager agent config not found at {current_dir / 'report_manager_agent.yaml'}"
     )
 
 root_agent = Agent(

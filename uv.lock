@@ -3182,6 +3182,18 @@ wheels = [
 ]
 
 [[package]]
+name = "neo4j"
+version = "6.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytz" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/60/b2/87534fc0520e5f9db1432bacc3f8d0ce024608010babc4f65b96e0c34906/neo4j-6.0.3.tar.gz", hash = "sha256:7fb79e166e281aafd67d521f6611763ebcdc529f26db506c5605f91ddcd825ea", size = 239653, upload-time = "2025-11-06T16:57:57.012Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/fe/55ed1d4636defb57fae1f7be7818820aa8071d45949c91ef8649930e70c5/neo4j-6.0.3-py3-none-any.whl", hash = "sha256:a92023854da96aed4270e0d03d6429cdd7f0d3335eae977370934f4732de5678", size = 325433, upload-time = "2025-11-06T16:57:55.03Z" },
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5888,6 +5900,7 @@ dependencies = [
     { name = "langchain-community" },
     { name = "matplotlib" },
     { name = "mem0ai" },
+    { name = "neo4j" },
     { name = "networkx" },
     { name = "pandas" },
     { name = "plotly" },
@@ -5919,6 +5932,7 @@ requires-dist = [
     { name = "langchain-community", specifier = ">=0.4.1" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "mem0ai", specifier = ">=1.0.0" },
+    { name = "neo4j", specifier = ">=5.27.0" },
     { name = "networkx", specifier = ">=3.5" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "plotly", specifier = ">=6.4.0" },

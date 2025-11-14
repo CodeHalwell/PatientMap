@@ -1,18 +1,20 @@
 from __future__ import annotations
 
+from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config, handle_tool_error
 
+current_dir = Path(__file__).parent
 
 try:
-    review_agent_1_config = AgentConfig("./review_agent_1.yaml").get_agent()
-    review_agent_2_config = AgentConfig("./review_agent_2.yaml").get_agent()
-    review_agent_3_config = AgentConfig("./review_agent_3.yaml").get_agent()
+    review_agent_1_config = AgentConfig(str(current_dir / "review_agent_1.yaml")).get_agent()
+    review_agent_2_config = AgentConfig(str(current_dir / "review_agent_2.yaml")).get_agent()
+    review_agent_3_config = AgentConfig(str(current_dir / "review_agent_3.yaml")).get_agent()
 except FileNotFoundError as e:
-    raise RuntimeError(f"Review agent configuration file not found: {e.filename}") from e
+    raise RuntimeError(f"Review agent configuration file not found at {current_dir}") from e
 
 review_agent_1 = LlmAgent(
     name=review_agent_1_config.agent_name,

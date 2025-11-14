@@ -6,11 +6,19 @@ A sophisticated AI agent for researching medical conditions, analyzing peer-revi
 
 WellInformed uses a multi-tool approach to provide comprehensive clinical research capabilities:
 
+**Research Tools**:
 - **Semantic Scholar**: Search 200M+ academic papers on medical topics
 - **Habanero (CrossRef)**: Retrieve DOI metadata and bibliographic information
 - **PyTrials**: Discover active clinical trials from ClinicalTrials.gov
 - **Biopython**: Analyze biological sequences and genomic data
 - **pyOpenMS**: Process mass spectrometry data from proteomics studies
+
+**Knowledge Graph Storage**:
+- **Neo4j Aura**: **PRIMARY** persistent cloud-based graph database
+  - ONE unified graph per patient across all workflow phases
+  - No file operations needed - automatic cloud persistence
+  - Multi-patient support with shared research articles
+  - Production-grade graph database with ACID guarantees
 
 ## Project Structure
 
@@ -55,21 +63,69 @@ uv sync
 pip install -e .
 ```
 
+### Configuration
+
+Create a `.env` file with your API credentials:
+
+```env
+# Required: Google Gemini API
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Required: Neo4j Aura (for persistent knowledge graphs)
+NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_neo4j_password
+NEO4J_DATABASE=neo4j
+
+# Optional: Research APIs
+SEMANTIC_SCHOLAR_API_KEY=your_semantic_scholar_key  # Optional but recommended
+CROSSREF_EMAIL=your@email.com                       # Required for Habanero
+CLINICAL_TRIALS_API_KEY=your_clinical_trials_key    # Optional
+```
+
 ### Quick Start
 
-```python
-from agents.clinical.agent import ClinicalResearcherAgent
+```bash
+# Test Neo4j integration
+python test_neo4j_integration.py
 
-# Create agent
-agent = ClinicalResearcherAgent()
+# Run unified workflow test (recommended first)
+python test_unified_neo4j_workflow.py
 
-# Research a medical condition
-response = agent.run(
-    "What is the current evidence for treating Type 2 Diabetes with metformin?"
-)
-
-print(response)
+# Run the agent system
+cd src/patientmap
+uv run adk web agents
 ```
+
+Then interact with the agent system through the web interface to create patient knowledge graphs and conduct research.
+
+### Unified Neo4j Workflow
+
+**NEW**: PatientMap now uses **ONE persistent Neo4j graph per patient** across all workflow phases:
+
+```
+┌─────────────────────────────────┐
+│   Neo4j Aura Cloud Database     │
+│   (Single Persistent Graph)     │
+└────────┬────────────────────────┘
+         │
+    ┌────┴─────┬──────────┐
+    │          │          │
+┌───▼───┐  ┌──▼───┐  ┌───▼────┐
+│ Data  │  │Research│  │Clinical│
+│ Phase │  │ Phase │  │ Phase  │
+└───────┘  └────────┘  └────────┘
+CREATE      UPDATE      UPDATE
+Patient     + Research  + Clinical
+```
+
+**Key Benefits**:
+- ✅ **Single Source of Truth**: ONE graph across data → research → clinical phases
+- ✅ **No File Operations**: Automatic cloud persistence (no save/load)
+- ✅ **Multi-Patient Support**: Unique constraints enable multiple patients
+- ✅ **Production-Ready**: Enterprise Neo4j Aura with ACID guarantees
+
+See [`docs/neo4j_unified_workflow.md`](docs/neo4j_unified_workflow.md) for complete guide.
 
 ## Core Features
 

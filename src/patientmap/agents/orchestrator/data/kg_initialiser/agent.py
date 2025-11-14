@@ -15,13 +15,13 @@ from patientmap.common.helper_functions import retry_config
 from .planning.agent import root_agent as planning_agent
 from .build_loop.agent import root_agent as loop_agent
 
-# Load configuration from .profiles (maintain existing location for now)
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "knowledge" / "kg_initialiser.yaml"
+# Load configuration from local directory
+current_dir = Path(__file__).parent
 
 try:
-    kg_init_config = AgentConfig(str(config_path)).get_agent()
+    kg_init_config = AgentConfig(str(current_dir / "kg_initialiser_agent.yaml")).get_agent()
 except FileNotFoundError:
-    raise RuntimeError(f"KG initialiser config not found at {config_path}")
+    raise RuntimeError(f"KG initialiser config not found at {current_dir / 'kg_initialiser_agent.yaml'}")
 
 # Create coordinator agent
 kg_initialiser_agent = LlmAgent(
