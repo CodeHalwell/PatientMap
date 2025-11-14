@@ -4,9 +4,6 @@ Logging configuration for PatientMap agents
 import logging
 import atexit
 import warnings
-from google.adk.plugins.logging_plugin import (
-    LoggingPlugin, 
-)
 
 
 def _suppress_shutdown_warnings():
@@ -24,8 +21,3 @@ def configure_logging():
     
     # Note: These "Unclosed client session" errors are internal to LangChain's HTTP tools
     # and don't affect functionality. They only appear during shutdown.
-
-async def get_logging_plugin() -> LoggingPlugin:
-    """Create and return a LoggingPlugin instance for logging agent activities."""
-    logging_plugin = LoggingPlugin()
-    return logging_plugin

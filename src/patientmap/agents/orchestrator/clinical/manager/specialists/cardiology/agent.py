@@ -16,7 +16,7 @@ from google.adk.tools import google_search, url_context, AgentTool
 from patientmap.common.config import AgentConfig
 from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, semantic_scholar_tool, wikipedia_tool
 from patientmap.common.helper_functions import retry_config, handle_tool_error
-from patientmap.agents.orchestrator.clinical.checker.agent import checker_agent
+from ....checker.agent import checker_agent
 
 current_dir = Path(__file__).parent
 

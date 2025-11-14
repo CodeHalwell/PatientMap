@@ -17,6 +17,9 @@ from google.adk.apps.app import App, EventsCompactionConfig
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
+from google.adk.plugins.logging_plugin import (
+    LoggingPlugin, 
+)
 
 # Import phase agents using relative imports
 from .data.agent import root_agent as data_manager_agent
@@ -40,20 +43,21 @@ root_agent = Agent(
     sub_agents=[data_manager_agent, research_agent, clinical_agent, agent_report],
 )
 
+# Create app at module level for ADK web server
+app = App(
+    name='orchestrator',
+    root_agent=root_agent,
+    events_compaction_config=EventsCompactionConfig(
+        compaction_interval=3,
+        overlap_size=1
+    ),
+)
+
 if __name__ == "__main__":
     # For standalone testing
     from google.adk import Runner
     from google.adk.sessions import InMemorySessionService
     from google.adk.memory import InMemoryMemoryService
-    
-    app = App(
-        name='orchestrator',
-        root_agent=root_agent,
-        events_compaction_config=EventsCompactionConfig(
-            compaction_interval=3,
-            overlap_size=1
-        ),
-    )
     
     session_service = InMemorySessionService()
     memory_service = InMemoryMemoryService()
@@ -62,6 +66,7 @@ if __name__ == "__main__":
         app=app,
         session_service=session_service,
         memory_service=memory_service,
+        plugins=[LoggingPlugin()],
     )
     
     runner.run_async(
