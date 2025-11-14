@@ -4,12 +4,6 @@ Nutrition Dietetics Specialist Agent - Board-certified dietitian nutritionist fo
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Add src to path for relative imports
-src_path = Path(__file__).parent.parent.parent.parent.parent
-sys.path.insert(0, str(src_path))
 from google.adk.models.google_llm import Gemini
 from google.adk import Agent
 from patientmap.common.config import AgentConfig
@@ -17,15 +11,10 @@ from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, se
 from patientmap.common.helper_functions import retry_config, handle_tool_error
 
 # Load configuration
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "clinical" / "nutrition_dietetics_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    nutrition_settings = config
+    nutrition_settings = AgentConfig("./nutrition_dietetics_agent.yaml").get_agent()
 except (FileNotFoundError) as e:
-    raise FileNotFoundError(f"Configuration file not found at {config_path}") from e
-finally:
-    sys.path.pop(0)
+    raise RuntimeError("Nutrition Dietetics agent config not found. Please ensure nutrition_dietetics_agent.yaml exists in the current directory.") from e
 
 
 # Create agent

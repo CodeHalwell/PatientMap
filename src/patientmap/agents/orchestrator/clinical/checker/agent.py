@@ -4,34 +4,16 @@ Verifies responses from clinical manager using google_search and url_context too
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk import Agent
 from google.adk.tools import google_search, url_context
 from google.adk.models.google_llm import Gemini
-from patientmap.common.config import AgentConfig
-from google.genai import types
-
-retry_config = types.HttpRetryOptions(
-    attempts=5,  # Maximum retry attempts
-    exp_base=7,  # Delay multiplier
-    initial_delay=1,
-    http_status_codes=[429, 500, 503, 504],  # Retry on these HTTP errors
-)
-
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "clinical" / "clinical_agent.yaml"
-
-try:
-    config = AgentConfig(str(config_path)).get_agent()
-    clinical_settings = config
-except (FileNotFoundError) as e:
-    raise FileNotFoundError(f"Configuration file not found at {config_path}") from e
+from patientmap.common.helper_functions import retry_config
 
 checker_agent = Agent(
     name="clinical_checker_agent",
     description="Validates and verifies the responses provided by the Clinical Researcher Agent for accuracy and reliability.",
-    model=Gemini(model_name=clinical_settings.model, retry_options=retry_config),
+    model=Gemini(model_name="gemini-2.5-flash", retry_options=retry_config),
     instruction="""You are a meticulous clinical research expert tasked with validating outputs from the clinical manager agent.
 
 Your responsibilities:

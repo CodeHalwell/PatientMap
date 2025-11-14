@@ -18,17 +18,11 @@ from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, se
 from patientmap.common.helper_functions import retry_config, handle_tool_error
 
 
-# Load configuration
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "clinical" / "cardiology_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
+    config = AgentConfig("./cardiology_agent.yaml").get_agent()
     cardiology_settings = config
 except (FileNotFoundError) as e:
-    raise FileNotFoundError(f"Configuration file not found at {config_path}") from e
-finally:
-    # Clean up sys.path
-    sys.path.pop(0)
+    raise RuntimeError("Cardiology agent config not found. Please ensure cardiology_agent.yaml exists in the current directory.") from e
 
 
 check_agent = Agent(

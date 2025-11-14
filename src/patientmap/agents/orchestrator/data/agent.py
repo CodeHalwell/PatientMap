@@ -4,7 +4,6 @@ Part of Phase 1 of the PatientMap workflow.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
@@ -15,16 +14,12 @@ from patientmap.common.helper_functions import retry_config
 from .gatherer.agent import root_agent as data_gatherer_agent
 from .kg_initialiser.agent import root_agent as kg_initialiser_agent
 
-# Load configuration from .profiles (maintain existing location for now)
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent / ".profiles" / "data" / "data_manager_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    data_manager_agent_settings = config
+    data_manager_agent_settings = AgentConfig("./data_manager_agent.yaml").get_agent()
 except FileNotFoundError:
     raise RuntimeError(
-        f"Data manager agent configuration file not found at {config_path}. "
-        "Please ensure data_manager_agent.yaml exists in .profiles/data/"
+        "Data manager agent configuration file not found. "
+        "Please ensure data_manager_agent.yaml exists in the current directory."
     )
 
 # Create data manager agent

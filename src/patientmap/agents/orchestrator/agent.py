@@ -22,14 +22,10 @@ from patientmap.common.helper_functions import retry_config
 from .data.agent import root_agent as data_manager_agent
 from .research.agent import root_agent as research_agent
 from .clinical.agent import root_agent as clinical_agent
-from .report.agent import root_agent as report_agent
-
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent / ".profiles" / "orchestrator_agent.yaml"
+from .report.agent import root_agent as agent_report
 
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    orchestrator_settings = config
+    orchestrator_settings = AgentConfig("./orchestrator_agent.yaml").get_agent()
 except FileNotFoundError:
     raise RuntimeError("Orchestrator agent configuration file not found. Please create the file at '.profiles/orchestrator_agent.yaml'.")
 
@@ -39,7 +35,7 @@ root_agent = Agent(
     description=orchestrator_settings.description,
     model=Gemini(model_name=orchestrator_settings.model, retry_options=retry_config),
     instruction=orchestrator_settings.instruction,
-    sub_agents=[data_manager_agent, research_agent, clinical_agent, report_agent],
+    sub_agents=[data_manager_agent, research_agent, clinical_agent, agent_report],
 )
 
 if __name__ == "__main__":

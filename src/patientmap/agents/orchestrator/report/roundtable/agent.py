@@ -1,25 +1,16 @@
 from __future__ import annotations
-import sys
-from pathlib import Path
 
-# Add src to path for imports (needed when loaded by ADK server)
-src_path = Path(__file__).parent.parent.parent.parent
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config, handle_tool_error
 
-review_agent_1_config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "review" / "review_agent_1.yaml"
-review_agent_2_config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "review" / "review_agent_2.yaml"
-review_agent_3_config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "review" / "review_agent_3.yaml"
 
 try:
-    review_agent_1_config = AgentConfig(str(review_agent_1_config_path)).get_agent()
-    review_agent_2_config = AgentConfig(str(review_agent_2_config_path)).get_agent()
-    review_agent_3_config = AgentConfig(str(review_agent_3_config_path)).get_agent()
+    review_agent_1_config = AgentConfig("./review_agent_1.yaml").get_agent()
+    review_agent_2_config = AgentConfig("./review_agent_2.yaml").get_agent()
+    review_agent_3_config = AgentConfig("./review_agent_3.yaml").get_agent()
 except FileNotFoundError as e:
     raise RuntimeError(f"Review agent configuration file not found: {e.filename}") from e
 
@@ -61,5 +52,4 @@ root_agent = LlmAgent(
 )
 
 if __name__ == "__main__":
-    print(f"Roundtable Report Agent: {root_agent.name}")
-    print(f"Sub-agents: {[agent.name for agent in root_agent.sub_agents]}")
+    print(f"Roundtable Report Agent: {root_agent}")

@@ -4,7 +4,6 @@ Uses bulk operations to add nodes and relationships based on plan.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
@@ -24,14 +23,10 @@ from patientmap.tools.kg_tools import (
     validate_graph_structure,
 )
 
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "knowledge" / "kg_initialiser.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    builder_settings = config
+    builder_settings = AgentConfig("./kg_initialiser.yaml").get_agent()
 except FileNotFoundError:
-    raise RuntimeError(f"Builder config not found at {config_path}")
+    raise RuntimeError("Builder config not found. Please ensure kg_initialiser.yaml exists in the current directory.")
 
 # Create builder agent with KG tools
 build_agent = LlmAgent(

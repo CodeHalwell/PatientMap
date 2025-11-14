@@ -6,6 +6,21 @@
 
 ---
 
+## Latest Findings (2025-11-13)
+
+Latest repo audit (branch `update/agents`, commit head as of 2025-11-13) surfaces a few critical deltas versus the original January plan:
+
+- **Hierarchy migration complete** – The agent directory structure **has been reorganized**: `src/patientmap/agents/` now contains only `orchestrator/` with hierarchical subdirs (`data/`, `research/`, `clinical/`, `report/`). Sub-agents live under their respective phases (e.g., `data/gatherer/`, `clinical/manager/specialists/`), so the directory structure matches the proposed design. Legacy flat folders no longer exist at the top level.
+- **Config files remain remote** – Despite the hierarchy migration, all YAML configs still live under `.profiles/**`. Agents continue walking the filesystem (e.g., `Path(__file__).parent.parent.parent.parent.parent / ".profiles"`) to load them. Co-located `config.yaml` files have not been created, meaning config management still suffers from the path complexity issues.
+- **Observability plan pending** – `patientmap/common/logging.py` defines a helper to instantiate ADK's `LoggingPlugin`, but no agent or runner imports it. This diverges from Kaggle Day 4A guidance where the plugin is registered directly on the `Runner`.
+- **FastMCP unused** – `fastmcp>=2.13.0.2` ships in `pyproject.toml`, and the Google ADK guide (`guides/09_Google_ADK_Framework.md`) documents how to expose agents via MCP, yet no MCP server exists under `src/` and no FastMCP entry point has been wired.
+- **Evaluation assets missing** – A repo-wide search shows no `*.evalset.json`, `*.test.json`, or `test_config.json` files outside of the Kaggle notebooks. Day 4B's evaluation workflow has not been applied to PatientMap.
+- **Long-running + approvals absent** – There are no references to `LongRunningTool`, `ApprovalTool`, or any custom waiting states. All KG mutations and clinical recommendations run synchronously without human-in-the-loop checkpoints.
+
+These findings keep the original migration plan relevant, but the scope now explicitly includes observability, MCP exposure, and evaluation scaffolding so that the hierarchy change unlocks downstream tooling (tracing, MCP, CI evals) instead of existing as an isolated refactor.
+
+---
+
 ## Visual Diagram: Current vs Proposed Structure
 
 ### Current Structure (Flat)

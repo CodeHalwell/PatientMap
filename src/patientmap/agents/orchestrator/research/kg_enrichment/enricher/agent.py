@@ -4,7 +4,6 @@ Uses KG tools to load, enrich, and save the patient knowledge graph.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk import Agent
 from google.adk.models.google_llm import Gemini
@@ -27,14 +26,10 @@ from patientmap.tools.kg_tools import (
 )
 from patientmap.common.helper_functions import retry_config
 
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent.parent / ".profiles" / "knowledge" / "knowledge_graph_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
-    knowledge_graph_agent_settings = config
+    knowledge_graph_agent_settings = AgentConfig("./knowledge_graph_agent.yaml").get_agent()
 except FileNotFoundError:
-    raise RuntimeError(f"Knowledge Graph agent config not found at {config_path}")
+    raise RuntimeError("Knowledge Graph agent config not found. Please ensure knowledge_graph_agent.yaml exists in the current directory.")
 
 knowledge_graph_agent = Agent(
     name=knowledge_graph_agent_settings.agent_name,

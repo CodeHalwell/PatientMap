@@ -4,21 +4,17 @@ Collects comprehensive patient information through structured interview.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
 
-# Load configuration from .profiles (maintain existing location for now)
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "data" / "data_gatherer_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
+    config = AgentConfig("./data_gatherer_agent.yaml").get_agent()
     data_gatherer_agent_settings = config
 except FileNotFoundError:
-    raise FileNotFoundError(f"Configuration file not found at {config_path}")
+    raise FileNotFoundError("Configuration file not found at ./data_gatherer_agent.yaml")
 
 # Create the data gathering agent (no tools needed - just conversation)
 data_agent = LlmAgent(

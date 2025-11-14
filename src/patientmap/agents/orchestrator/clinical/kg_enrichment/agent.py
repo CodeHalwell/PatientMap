@@ -4,7 +4,6 @@ Adds clinical recommendations, specialist insights, and treatment plans to the p
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk import Agent
 from google.adk.models.google_llm import Gemini
@@ -24,13 +23,11 @@ from patientmap.tools.kg_tools import (
 from patientmap.common.helper_functions import retry_config
 
 # Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "clinical" / "clinical_kg_enrichment_agent.yaml"
-
 try:
-    config = AgentConfig(str(config_path)).get_agent()
+    config = AgentConfig("./clinical_kg_enrichment_agent.yaml").get_agent()
     settings = config
 except FileNotFoundError:
-    raise RuntimeError(f"Clinical KG enrichment config not found at {config_path}")
+    raise RuntimeError("Clinical KG enrichment config not found.")
 
 clinical_kg_enrichment_agent = Agent(
     name=settings.agent_name,

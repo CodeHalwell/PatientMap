@@ -4,20 +4,16 @@ Identifies key clinical areas requiring literature review.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk import Agent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
 
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "research" / "research_topics.yaml"
-
 try:
-    topics_config = AgentConfig(str(config_path)).get_agent()
+    topics_config = AgentConfig("./research_topics.yaml").get_agent()
 except FileNotFoundError:
-    raise RuntimeError(f"Research topics config not found at {config_path}")
+    raise RuntimeError("Research topics config not found. Please ensure research_topics.yaml exists in the current directory.")
 
 research_topics = Agent(
     name=topics_config.agent_name,

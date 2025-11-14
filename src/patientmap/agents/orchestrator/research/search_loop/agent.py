@@ -4,7 +4,6 @@ Uses google_search and url_context tools to gather clinical evidence.
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from google.adk import Agent
 from google.adk.agents import LoopAgent
@@ -13,13 +12,10 @@ from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
 
-# Load configuration from .profiles
-config_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / ".profiles" / "research" / "research_agent.yaml"
-
 try:
-    researcher_config = AgentConfig(str(config_path)).get_agent()
+    researcher_config = AgentConfig("./research_agent.yaml").get_agent()
 except FileNotFoundError:
-    raise RuntimeError(f"Research agent config not found at {config_path}")
+    raise RuntimeError("Research agent config not found. Please ensure research_agent.yaml exists in the current directory.")
 
 research_agent = Agent(
     name=researcher_config.agent_name,
