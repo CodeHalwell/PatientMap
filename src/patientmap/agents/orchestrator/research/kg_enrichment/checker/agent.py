@@ -36,4 +36,3 @@ root_agent = enrichment_checker
 
 if __name__ == "__main__":
     print(f"Enrichment Checker: {root_agent.name}")
-    print(f"Has exit_loop: {exit_loop in root_agent.tools}")

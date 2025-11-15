@@ -39,4 +39,3 @@ root_agent = logic_checker_agent
 
 if __name__ == "__main__":
     print(f"Checker Agent: {root_agent.name}")
-    print(f"Has exit_loop: {exit_loop in root_agent.tools}")

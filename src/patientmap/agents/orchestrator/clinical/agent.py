@@ -16,6 +16,7 @@ from .manager.agent import root_agent as clinical_manager
 from .checker.agent import root_agent as checker_agent
 from .kg_enrichment.agent import root_agent as clinical_kg_enrichment_agent
 from patientmap.common.config import AgentConfig
+from patientmap.tools.tool_registry import get_tools_from_config
 
 current_dir = Path(__file__).parent
 
@@ -23,6 +24,8 @@ try:
     clinical_config = AgentConfig(str(current_dir / "clinical_coordinator.yaml")).get_agent()
 except FileNotFoundError:
     raise RuntimeError(f"Clinical agent config not found at {current_dir / 'clinical_coordinator.yaml'}")
+
+agent_tools = get_tools_from_config(clinical_config.tools)
 
 # Clinical analysis loop (manager + checker)
 clinical_loop_agent = LoopAgent(
@@ -38,6 +41,7 @@ clinical_coordinator = LlmAgent(
     description=clinical_config.description,
     model=Gemini(model_name=clinical_config.model, retry_options=retry_config),
     instruction=clinical_config.instruction,
+    tools=agent_tools,
     sub_agents=[clinical_loop_agent, clinical_kg_enrichment_agent],
 )
 

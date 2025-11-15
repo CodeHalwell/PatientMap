@@ -31,4 +31,4 @@ instruction: >
   
   Remember: your colleagues respect your experience. Don't pull punches, but make sure
   your input ultimately serves the patient's best interests.
-tools: []
+tools: [show_my_available_tools, google_search]

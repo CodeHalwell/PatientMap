@@ -55,4 +55,4 @@ instruction: |
 
   Once your finished, report back to the research_manager_agent that the topics have been generated, notifying the user of
   the completion of the topic generation phase.
-tools: []
+tools: [show_my_available_tools]

@@ -7,6 +7,7 @@ from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config, handle_tool_error
 from patientmap.tools.tool_registry import get_tools_from_config
+from google.adk.tools import google_search
 
 current_dir = Path(__file__).parent
 

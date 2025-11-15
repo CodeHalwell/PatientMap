@@ -11,6 +11,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
+from patientmap.tools.tool_registry import get_tools_from_config
 
 # Import sub-agents using relative imports
 from .gatherer.agent import root_agent as data_gatherer_agent
@@ -26,6 +27,9 @@ except FileNotFoundError:
         "Please ensure data_manager_agent.yaml exists in the current directory."
     )
 
+# Load tools from registry (show_my_available_tools for self-awareness)
+agent_tools = get_tools_from_config(data_manager_agent_settings.tools)
+
 # Create data manager agent
 manager_agent = LlmAgent(
     name=data_manager_agent_settings.agent_name,
@@ -36,6 +40,7 @@ manager_agent = LlmAgent(
     ),
     instruction=data_manager_agent_settings.instruction,
     sub_agents=[data_gatherer_agent, kg_initialiser_agent],
+    tools=agent_tools,
 )
 
 # Export as root_agent for consistency

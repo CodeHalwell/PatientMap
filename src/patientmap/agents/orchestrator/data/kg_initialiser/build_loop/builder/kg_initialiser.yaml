@@ -118,4 +118,4 @@ instruction: |
 
   Detect completion of each step and proceed to the next automatically, notifying
   the user briefly at each transition. Work with the checking agent to make as many changes as you can.
-tools: [verify_neo4j_connection, initialize_neo4j_schema, neo4j_initialize_patient_graph, neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients]
+tools: [show_my_available_tools, verify_neo4j_connection, initialize_neo4j_schema, neo4j_initialize_patient_graph, neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients]

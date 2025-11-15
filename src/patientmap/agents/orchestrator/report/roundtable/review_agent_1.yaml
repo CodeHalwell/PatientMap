@@ -22,4 +22,4 @@ instruction: >
   
   Balance being personable with being professional. You're here to help reach sound clinical
   conclusions through collaborative, enjoyable dialogue.
-tools: []
+tools: [show_my_available_tools, google_search]

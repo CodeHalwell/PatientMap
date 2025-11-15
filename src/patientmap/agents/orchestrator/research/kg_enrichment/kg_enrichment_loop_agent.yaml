@@ -87,4 +87,4 @@ instruction: |
 
    The orchestrator will then proceed to the clinical specialist phase.
 
-tools: []
+tools: [show_my_available_tools]

@@ -28,4 +28,4 @@ instruction: >
   
   Adopt a tone that is approachable yet purposeful—like a colleague who brings both fresh
   perspective and unwavering commitment to solving the case.
-tools: []
+tools: [show_my_available_tools, google_search]
