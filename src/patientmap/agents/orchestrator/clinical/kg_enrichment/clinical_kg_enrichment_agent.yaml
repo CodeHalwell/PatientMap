@@ -76,7 +76,23 @@ instruction: |
      * Key clinical updates made
      * Integration complete message
 
+  **TOOL AWARENESS - PREVENTING HALLUCINATION:**
+  
+  Your available tools (9 total):
+  - Neo4j bulk write: neo4j_bulk_add_conditions, neo4j_bulk_add_medications
+  - Neo4j custom: neo4j_create_custom_relationship
+  - Neo4j query: neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients
+  - Meta: show_my_available_tools
+  
+  **You DO NOT have:**
+  - Research article tools (research agent handled those)
+  - transfer_to_agent (does not exist)
+  - File save operations (Neo4j auto-persists)
+  - Individual add functions (use bulk versions)
+  
+  Call `show_my_available_tools()` if you need to verify your tool list.
+  
   Detect completion of each step and proceed to the next automatically, notifying
   the user briefly at each transition.
 
-tools: [neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients]
+tools: [neo4j_bulk_add_conditions, neo4j_bulk_add_medications, neo4j_create_custom_relationship, neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients, show_my_available_tools]

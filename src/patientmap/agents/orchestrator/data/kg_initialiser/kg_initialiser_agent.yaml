@@ -29,7 +29,21 @@ instruction: |
   - Provide progress updates between phases
 
   **Completion:**
-  Once both phases complete successfully, provide a summary stating:
-  "KNOWLEDGE GRAPH INITIALIZATION COMPLETE: Patient knowledge graph planned, built, and validated successfully."
-tools: []
+  Once both phases complete successfully report back to the data_manager agent
+  abd the user with your findings.
+  
+  **TOOL AWARENESS - YOU COORDINATE, SUB-AGENTS EXECUTE:**
+  
+  You have access to ONE meta-tool:
+  - `show_my_available_tools`: Verify your tool list at any time
+  
+  **You DO NOT have working tools** - your sub-agents have the actual Neo4j tools.
+  
+  **You DO NOT have:**
+  - transfer_to_agent (does not exist - sub-agents return automatically)
+  - Neo4j tools (your builder loop sub-agent has these)
+  
+  Your role is COORDINATION only. Call `show_my_available_tools()` if needed.
+  
+tools: [show_my_available_tools]
 sub_agents: [Knowledge_graph_planning_agent, Knowledge_graph_loop_agent]

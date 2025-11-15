@@ -8,11 +8,9 @@ from pathlib import Path
 
 from google.adk.models.google_llm import Gemini
 from google.adk import Agent
-from google.adk.tools import AgentTool
 from patientmap.common.config import AgentConfig
-from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, semantic_scholar_tool, wikipedia_tool
+from patientmap.tools.tool_registry import get_tools_from_config
 from patientmap.common.helper_functions import retry_config, handle_tool_error
-from ....checker.agent import checker_agent
 
 current_dir = Path(__file__).parent
 
@@ -22,6 +20,8 @@ try:
 except (FileNotFoundError) as e:
     raise RuntimeError(f"Psychiatry agent config not found at {current_dir / 'psychiatry_agent.yaml'}") from e
 
+# Load tools from registry
+agent_tools = get_tools_from_config(psychiatry_settings.tools)
 
 # Create agent
 psychiatry_agent = Agent(
@@ -29,7 +29,7 @@ psychiatry_agent = Agent(
     description=psychiatry_settings.description,
     model=Gemini(model_name=psychiatry_settings.model, retry_options=retry_config),
     instruction=psychiatry_settings.instruction,
-    tools=[pubmed_tool(), google_scholar_tool(), semantic_scholar_tool(), wikipedia_tool(), AgentTool(checker_agent)],
+    tools=agent_tools,
     on_tool_error_callback=handle_tool_error,
 )
 

@@ -39,4 +39,19 @@ instruction: >
   
   You will receive context from preceding phases. Use the full investigation history to craft
   a report that honors both the science and the human experience of illness.
-tools: []
+  
+  **TOOL AWARENESS - FINAL REPORT GENERATION:**
+  
+  You have access to ONE meta-tool:
+  - `show_my_available_tools`: Verify your tool list at any time
+  
+  **You DO NOT have working tools** - you generate narrative reports from synthesized data.
+  
+  **You DO NOT have:**
+  - transfer_to_agent (does not exist)
+  - Neo4j tools (you receive compiled data, don't query directly)
+  - Search tools (you work from compiled findings)
+  
+  Your role is NARRATIVE GENERATION only. Call `show_my_available_tools()` if needed.
+  
+tools: [show_my_available_tools]

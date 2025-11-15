@@ -8,16 +8,9 @@ from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
-from google.adk.tools import exit_loop
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
-from patientmap.tools.neo4j_kg_tools import (
-    neo4j_get_patient_overview,
-    neo4j_find_related_research,
-    neo4j_export_graph_summary,
-    neo4j_analyze_graph_connectivity,
-    neo4j_list_all_patients,
-)
+from patientmap.tools.tool_registry import get_tools_from_config
 
 # Load configuration from .profiles
 current_dir = Path(__file__).parent
@@ -26,6 +19,9 @@ try:
     checker_settings = config
 except FileNotFoundError:
     raise RuntimeError(f"Checker config not found at {current_dir / 'kg_checker_agent.yaml'}")
+
+# Load tools from tool registry based on YAML config
+agent_tools = get_tools_from_config(checker_settings.tools)
 
 # Create logic checker agent
 logic_checker_agent = LlmAgent(
@@ -36,14 +32,7 @@ logic_checker_agent = LlmAgent(
         retry_options=retry_config
     ),
     instruction=checker_settings.instruction,
-    tools=[
-        neo4j_get_patient_overview,
-        neo4j_find_related_research,
-        neo4j_export_graph_summary,
-        neo4j_analyze_graph_connectivity,
-        neo4j_list_all_patients,
-        exit_loop,  # Critical: allows checker to end loop
-    ],
+    tools=agent_tools,
 )
 
 root_agent = logic_checker_agent

@@ -65,6 +65,7 @@ instruction: |
   - `neo4j_analyze_graph_connectivity` - Analyze graph connections after enrichment
   - `neo4j_list_all_patients` - List all patients in the database
   - `exit_loop` - Exit validation loop when enrichment is validated
+  - `show_my_available_tools` - Verify your tool list to prevent hallucination
   
   **NO FILE SAVING REQUIRED:**
   - Neo4j automatically persists all changes
@@ -80,6 +81,13 @@ instruction: |
   **Example Exit Message:**
   "RESEARCH ENRICHMENT COMPLETE: 11 articles added with 31 STUDIES relationships. Knowledge graph successfully enriched with evidence-based research findings."
 
+  **PREVENTING HALLUCINATION:**
+  If you're unsure what tools you have, call `show_my_available_tools()` to see your
+  complete tool list. You DO NOT have:
+  - Any write/modify tools (you're read-only)
+  - transfer_to_agent (does not exist)
+  - File save operations (Neo4j auto-persists)
+  
   Detect completion of each step and proceed to the next automatically, notifying
   the user briefly at each transition.
-tools: [neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients, exit_loop]
+tools: [neo4j_get_patient_overview, neo4j_find_related_research, neo4j_export_graph_summary, neo4j_analyze_graph_connectivity, neo4j_list_all_patients, exit_loop, show_my_available_tools]

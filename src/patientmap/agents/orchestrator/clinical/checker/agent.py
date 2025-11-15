@@ -7,11 +7,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from google.adk import Agent
-from google.adk.tools import google_search, url_context
+from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
-from patientmap.common.helper_functions import retry_config
+from patientmap.common.helper_functions import retry_config, handle_tool_error
 from patientmap.common.config import AgentConfig
+from patientmap.tools.tool_registry import get_tools_from_config
 
 current_dir = Path(__file__).parent
 
@@ -20,12 +20,16 @@ try:
 except FileNotFoundError:
     raise RuntimeError(f"Clinical checker agent config not found at {current_dir / 'clinical_checker_agent.yaml'}")
 
-checker_agent = Agent(
+# Load tools from tool registry based on YAML config
+agent_tools = get_tools_from_config(config.tools)
+
+checker_agent = LlmAgent(
     name=config.agent_name,
     description=config.description,
     model=Gemini(model_name=config.model, retry_options=retry_config),
     instruction=config.instruction,
-    tools=[google_search, url_context]
+    tools=agent_tools,
+    on_tool_error_callback=handle_tool_error,
 )
 
 root_agent = checker_agent

@@ -1,15 +1,14 @@
 """
 Knowledge Graph Initialiser - Coordinates KG creation workflow.
 Orchestrates planning → building → validation loop.
+Uses deterministic SequentialAgent for reliable execution flow.
 """
 
 from __future__ import annotations
 from pathlib import Path
 
-from google.adk.agents import LlmAgent
-from google.adk.models.google_llm import Gemini
-from patientmap.common.config import AgentConfig
-from patientmap.common.helper_functions import retry_config
+from google.adk.agents import SequentialAgent, LlmAgent
+from patientmap.common.helper_functions import handle_tool_error
 
 # Import sub-agents using relative imports
 from .planning.agent import root_agent as planning_agent
@@ -18,48 +17,26 @@ from .build_loop.agent import root_agent as loop_agent
 # Load configuration from local directory
 current_dir = Path(__file__).parent
 
-try:
-    kg_init_config = AgentConfig(str(current_dir / "kg_initialiser_agent.yaml")).get_agent()
-except FileNotFoundError:
-    raise RuntimeError(f"KG initialiser config not found at {current_dir / 'kg_initialiser_agent.yaml'}")
+summary_agent = LlmAgent(
+    name="summary_of_kg",
+    description="Summarises the output from the knowldge graph building process.",
+    model="gemini-2.5-flash",
+    instruction="Summarise the output from the knowledge graph building process to report back to the data manager.",
+    sub_agents=[],
+    on_tool_error_callback=handle_tool_error,
+)
 
-# Create coordinator agent
-kg_initialiser_agent = LlmAgent(
+
+# Use SequentialAgent for deterministic flow: planning → build loop
+# This ensures planning always completes before the build/validation loop starts
+kg_initialiser_agent = SequentialAgent(
     name="Knowledge_graph_initialiser_agent",
-    description="An agent that organises the building and validation of a clinical knowledge graph.",
-    model=Gemini(
-        model_name=kg_init_config.model,
-        retry_options=retry_config
+    description=(
+        "Coordinates knowledge graph initialization workflow. "
+        "First, planning agent creates the structure, then build loop iteratively "
+        "constructs and validates the graph until checker is satisfied."
     ),
-    instruction="""You are the Knowledge Graph Initialiser coordinator. Your role is to orchestrate the sequential workflow of knowledge graph creation.
-
-**MANDATORY WORKFLOW SEQUENCE:**
-
-**Phase 1: Planning**
-- Delegate to Knowledge_graph_planning_agent
-- Wait for the agent to analyze patient data and create comprehensive KG plan
-- The plan will include all nodes, relationships, and structure details
-
-**Phase 2: Building and Validation Loop**
-- Delegate to Knowledge_graph_loop_agent
-- This agent runs an iterative loop:
-  * Builder creates/updates the graph based on plan and feedback
-  * Checker validates structure, completeness, and clinical coherence
-  * Loop continues until checker calls exit_loop (max 3 iterations)
-- Wait for "KNOWLEDGE GRAPH VALIDATION COMPLETE" signal
-
-**Coordination Rules:**
-- Execute phases SEQUENTIALLY - planning must complete before building begins
-- After planning completes, acknowledge the plan and proceed to building phase
-- Monitor for completion signals before finishing
-- Provide progress updates between phases
-
-**Completion:**
-  Detect completion of each step and proceed to the next automatically, notifying
-  the user briefly at each transition. Once the graph has been completed, the process can
-  move onto the next step"
-""",
-    sub_agents=[planning_agent, loop_agent],
+    sub_agents=[planning_agent, loop_agent, summary_agent],
 )
 
 root_agent = kg_initialiser_agent

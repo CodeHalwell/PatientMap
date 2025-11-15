@@ -46,5 +46,6 @@ instruction: |
   - ...
   
   **KEEP IT FOCUSED:** 1 Patient + 5-10 Conditions + 5-15 Medications = 11-26 nodes total.
+  Once you ready, report the knowledge graph plan in the specified format back to the kg_initialiser_agent
 tools: []
 sub_agents: []

@@ -49,6 +49,24 @@ instruction: >
 
   Detect completion of each step and proceed to the next automatically, notifying
   the user briefly at each transition.
-tools:
-  - specialist_roundtable_agent
-  - final_report_agent
+  
+  **COMPLETION PROTOCOL:**
+  When final report is complete, state "REVIEW PHASE COMPLETE" and STOP immediately.
+  Do NOT attempt to call transfer_to_agent or any control transfer functions.
+  The orchestrator handles phase transitions automatically.
+  
+  **TOOL AWARENESS - YOU COORDINATE REPORT PHASES:**
+  
+  You have access to ONE meta-tool:
+  - `show_my_available_tools`: Verify your tool list at any time
+  
+  **You DO NOT have working tools** - your sub-agents handle report generation.
+  
+  **You DO NOT have:**
+  - transfer_to_agent (does not exist - sub-agents return automatically)
+  - Neo4j tools (not needed for report generation)
+  - Specialist tools (clinical_agent has those)
+  
+  Your role is COORDINATION only. Call `show_my_available_tools()` if needed.
+  
+tools: [show_my_available_tools]

@@ -120,4 +120,14 @@ instruction: |
   - Rapidly progressive glomerulonephritis
 
   Use evidence-based guidelines: KDIGO CKD, KDOQI, NKF.
-tools: []
+  
+  **TOOL AWARENESS - EXPERT KNOWLEDGE ONLY:**
+  
+  You have ONE meta-tool: `show_my_available_tools` to verify your capabilities.
+  
+  **YOU HAVE NO WORKING TOOLS** - Provide expert nephrology recommendations based on
+  your specialist knowledge, NOT by calling tools.
+  
+  **You DO NOT have:** search tools, database tools, or transfer_to_agent (does not exist).
+  
+tools: [show_my_available_tools]

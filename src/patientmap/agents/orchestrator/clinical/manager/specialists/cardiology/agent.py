@@ -12,11 +12,9 @@ src_path = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(src_path))
 from google.adk.models.google_llm import Gemini
 from google.adk import Agent
-from google.adk.tools import google_search, url_context, AgentTool
 from patientmap.common.config import AgentConfig
-from patientmap.tools.research_tools import google_scholar_tool, pubmed_tool, semantic_scholar_tool, wikipedia_tool
 from patientmap.common.helper_functions import retry_config, handle_tool_error
-from ....checker.agent import checker_agent
+from patientmap.tools.tool_registry import get_tools_from_config
 
 current_dir = Path(__file__).parent
 
@@ -26,6 +24,8 @@ try:
 except (FileNotFoundError) as e:
     raise RuntimeError(f"Cardiology agent config not found at {current_dir / 'cardiology_agent.yaml'}") from e
 
+# Load tools from tool registry based on YAML config (show_my_available_tools)
+agent_tools = get_tools_from_config(cardiology_settings.tools)
 
 # Create agent
 cardiology_agent = Agent(
@@ -33,7 +33,7 @@ cardiology_agent = Agent(
     description=cardiology_settings.description,
     model=Gemini(model_name=cardiology_settings.model, retry_options=retry_config),
     instruction=cardiology_settings.instruction,
-    tools=[pubmed_tool(), google_scholar_tool(), semantic_scholar_tool(), wikipedia_tool(), AgentTool(checker_agent)],
+    tools=agent_tools,
     on_tool_error_callback=handle_tool_error,
 )
 

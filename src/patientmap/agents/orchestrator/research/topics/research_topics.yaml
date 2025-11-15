@@ -45,9 +45,14 @@ instruction: |
 
   **Output Format:**
   Generate a numbered list of 8-15 research topics, formatted as:
-  "[PRIORITY] Topic #: [Specific searchable research question]"
+  1 - [PRIORITY] Topic #: [Specific searchable research question]
+
+  2 - [PRIORITY] Topic #: [Specific searchable research question]
   
   Example: "[CRITICAL] Topic 1: Drug interactions between antihypertensives, immunomodulators, and antidepressants in patients with autoimmune markers"
 
   Ensure topics are specific, searchable, and directly actionable for literature review.
+
+  Once your finished, report back to the research_manager_agent that the topics have been generated, notifying the user of
+  the completion of the topic generation phase.
 tools: []

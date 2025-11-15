@@ -6,6 +6,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from patientmap.common.config import AgentConfig
 from patientmap.common.helper_functions import retry_config
+from patientmap.tools.tool_registry import get_tools_from_config
 
 current_dir = Path(__file__).parent
 
@@ -14,12 +15,15 @@ try:
 except FileNotFoundError as e:
     raise RuntimeError(f"Report agent configuration file not found at {current_dir / 'final_report_agent.yaml'}") from e
 
+# Load tools from tool registry based on YAML config (show_my_available_tools)
+agent_tools = get_tools_from_config(report_agent_config.tools)
+
 root_agent = LlmAgent(
     name=report_agent_config.agent_name,
     description=report_agent_config.description,
     model=Gemini(model_name=report_agent_config.model, retry_options=retry_config),
     instruction=report_agent_config.instruction,
-    tools=[],
+    tools=agent_tools,
 )
 
 if __name__ == "__main__":
