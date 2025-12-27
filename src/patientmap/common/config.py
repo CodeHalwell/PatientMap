@@ -1,10 +1,11 @@
 import yaml
-from common.models import AgentSettings
+from patientmap.common.models import AgentSettings
 
 
 class AgentConfig:
     def __init__(self, profile_path):
-        self.profile = yaml.safe_load(open(profile_path))
+        with open(profile_path, 'r', encoding='utf-8') as f:
+            self.profile = yaml.safe_load(f)
 
     def get_agent(self):
         return AgentSettings(
