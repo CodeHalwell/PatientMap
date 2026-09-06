@@ -5471,7 +5471,7 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=2.13.0.2" },
     { name = "google-adk", specifier = ">=2.8.0" },
     { name = "google-cloud-firestore", specifier = ">=2.21.0" },
-    { name = "google-genai", specifier = ">=2.22.0" },
+    { name = "google-genai", specifier = ">=2.22.0,<3" },
     { name = "google-search-results", specifier = ">=2.4.2" },
     { name = "habanero", specifier = ">=2.3.0" },
     { name = "huggingface-hub", specifier = ">=0.36.0" },

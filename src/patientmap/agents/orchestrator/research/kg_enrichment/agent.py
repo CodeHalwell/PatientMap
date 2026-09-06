@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from google.adk.agents import LlmAgent, LoopAgent, SequentialAgent
 from google.adk.tools import transfer_to_agent, ToolContext
+from google.adk.models.google_llm import Gemini
 
 # Import enricher and checker sub-agents
 from .enricher.agent import root_agent as knowledge_graph_agent
@@ -15,7 +16,7 @@ from .checker.agent import root_agent as enrichment_checker
 from pathlib import Path
 
 from patientmap.common.config import AgentConfig
-from patientmap.common.helper_functions import handle_tool_error
+from patientmap.common.helper_functions import handle_tool_error, retry_config
 from patientmap.tools.tool_registry import get_tools_from_config
 current_dir = Path(__file__).parent
 
@@ -37,7 +38,7 @@ enrichment_loop = LoopAgent(
 summary_agent = LlmAgent(
     name="kg_enrichment_summary_agent",
     description="Summarizes the results of the knowledge graph enrichment process.",
-    model=kg_enrichment_loop_config.model,
+    model=Gemini(model=kg_enrichment_loop_config.model, retry_options=retry_config),
     instruction="Summarize the key outcomes and findings from the knowledge graph enrichment process and call the transfer_to_agent tool to pass the summary to the clinical coordinator.",
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,
