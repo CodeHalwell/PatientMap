@@ -1,6 +1,6 @@
 agent_id: dma01
 agent_name: data_manager_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: |
   This agent is responsible for managing the data input workflow into the system.
   It coordinates the data_agent to gather information from users, then tasks the kg_initialiser_agent

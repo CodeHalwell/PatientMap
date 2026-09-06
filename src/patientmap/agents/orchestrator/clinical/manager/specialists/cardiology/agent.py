@@ -31,7 +31,7 @@ agent_tools = get_tools_from_config(cardiology_settings.tools)
 cardiology_agent = Agent(
     name=cardiology_settings.agent_name,
     description=cardiology_settings.description,
-    model=Gemini(model_name=cardiology_settings.model, retry_options=retry_config),
+    model=Gemini(model=cardiology_settings.model, retry_options=retry_config),
     instruction=cardiology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

@@ -31,7 +31,7 @@ data_agent = LlmAgent(
     name=data_gatherer_agent_settings.agent_name,
     description=data_gatherer_agent_settings.description,
     model=Gemini(
-        model_name=data_gatherer_agent_settings.model,
+        model=data_gatherer_agent_settings.model,
         retry_options=retry_config
     ),
     instruction=data_gatherer_agent_settings.instruction,

@@ -39,7 +39,7 @@ clinical_loop_agent = LoopAgent(
 clinical_coordinator = LlmAgent(
     name=clinical_config.agent_name,
     description=clinical_config.description,
-    model=Gemini(model_name=clinical_config.model, retry_options=retry_config),
+    model=Gemini(model=clinical_config.model, retry_options=retry_config),
     instruction=clinical_config.instruction,
     tools=agent_tools,
     sub_agents=[clinical_loop_agent, clinical_kg_enrichment_agent],

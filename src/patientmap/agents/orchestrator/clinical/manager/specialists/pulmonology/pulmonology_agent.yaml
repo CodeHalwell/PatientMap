@@ -1,6 +1,6 @@
 agent_id: pa01
 agent_name: pulmonary_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified pulmonologist agent specializing in respiratory diseases and sleep disorders.
 instruction: |

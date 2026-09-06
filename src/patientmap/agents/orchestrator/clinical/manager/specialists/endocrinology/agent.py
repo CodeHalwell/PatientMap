@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(endocrinology_settings.tools)
 endocrinology_agent = Agent(
     name=endocrinology_settings.agent_name,
     description=endocrinology_settings.description,
-    model=Gemini(model_name=endocrinology_settings.model, retry_options=retry_config),
+    model=Gemini(model=endocrinology_settings.model, retry_options=retry_config),
     instruction=endocrinology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

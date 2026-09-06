@@ -29,7 +29,7 @@ reviewer_tools = get_tools_from_config(reviewer_agent_config.tools)
 research_agent = LlmAgent(
     name=researcher_config.agent_name,
     description=researcher_config.description,
-    model=Gemini(model_name=researcher_config.model, retry_options=retry_config),
+    model=Gemini(model=researcher_config.model, retry_options=retry_config),
     instruction=f"{researcher_config.instruction}\n\nResearch topics to investigate: {{research_topics_list}}",
     tools=research_tools,
     output_key="research_findings"
@@ -38,7 +38,7 @@ research_agent = LlmAgent(
 reviewer_agent = LlmAgent(
     name=reviewer_agent_config.agent_name,
     description=reviewer_agent_config.description,
-    model=Gemini(model_name=reviewer_agent_config.model, retry_options=retry_config),
+    model=Gemini(model=reviewer_agent_config.model, retry_options=retry_config),
     instruction=f"{reviewer_agent_config.instruction}\n\nResearch findings to review: {{research_findings}}",
     tools=reviewer_tools,
 )

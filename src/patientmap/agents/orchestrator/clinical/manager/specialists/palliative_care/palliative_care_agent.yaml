@@ -1,6 +1,6 @@
 agent_id: pc01
 agent_name: palliative_care_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A palliative care specialist agent focusing on symptom management, quality of life, and goals of care in serious illness.
 instruction: |

@@ -27,7 +27,7 @@ agent_tools = get_tools_from_config(psychiatry_settings.tools)
 psychiatry_agent = Agent(
     name=psychiatry_settings.agent_name,
     description=psychiatry_settings.description,
-    model=Gemini(model_name=psychiatry_settings.model, retry_options=retry_config),
+    model=Gemini(model=psychiatry_settings.model, retry_options=retry_config),
     instruction=psychiatry_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

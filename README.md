@@ -251,7 +251,7 @@ See CONTRIBUTING.md for guidelines.
 ## Architecture
 
 ### Agent Framework
-Built on [Google ADK](guides/GOOGLE_ADK_REFERENCE.md) for:
+Built on [Google ADK](guides/09_Google_ADK_Framework.md) (`google-adk>=2.8.0`, `gemini-3.8-flash`) for:
 - Multi-agent orchestration
 - Tool integration
 - State management

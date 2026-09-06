@@ -16,9 +16,14 @@ class AgentSettings(BaseModel):
     agent_id: str = Field(..., description="Unique identifier for the agent")
     agent_name: str = Field(..., description="Name of the agent")
     model: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.8-flash",
         description="Model used by the agent",
-        pattern="^(gemini-2.5-pro|gemini-2.5-pro-preview-tts|gemini-2.5-flash|gemini-2.5-flash-preview-09-2025|gemini-2.5-flash-native-audio-preview-09-2025|gemini-2.5-flash-preview-tts|gemini-2.5-flash-lite|gemini-2.5-flash-lite-preview-09-2025)$"
+        # Gemini 3.x family only: gemini-3.8-flash, gemini-3.7-flash,
+        # gemini-3.6-flash, gemini-3.5-flash, gemini-3.5-flash-lite,
+        # gemini-3.1-flash-lite, gemini-3.1-pro-preview, gemini-3-flash-preview.
+        # Matched by shape rather than an explicit list so new point releases
+        # do not need a code change.
+        pattern=r"^gemini-3(\.\d+)?-(pro|flash|flash-lite)(-preview)?$"
     )
     instruction: str = Field(..., description="Instruction for the agent")
     description: str = Field(..., description="Description of the agent")

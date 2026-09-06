@@ -27,7 +27,7 @@ agent_tools = get_tools_from_config(geriatrics_settings.tools)
 geriatrics_agent = Agent(
     name=geriatrics_settings.agent_name,
     description=geriatrics_settings.description,
-    model=Gemini(model_name=geriatrics_settings.model, retry_options=retry_config),
+    model=Gemini(model=geriatrics_settings.model, retry_options=retry_config),
     instruction=geriatrics_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

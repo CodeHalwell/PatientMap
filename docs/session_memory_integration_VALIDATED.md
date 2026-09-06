@@ -35,27 +35,27 @@ This document presents a **fully validated roadmap** for integrating Google ADK 
 
 ```
 App("patientmap")
-└── orchestrator_agent (root_agent) [gemini-2.5-pro]
+└── orchestrator_agent (root_agent) [gemini-3.8-flash]
     │   Sequential phases: data → research → clinical
     │
-    ├── data_manager_agent [gemini-2.5-flash]
-    │   ├── data_gatherer_agent (triage/intake) [gemini-2.5-flash]
-    │   └── kg_initialiser_agent [gemini-2.5-flash]
+    ├── data_manager_agent [gemini-3.8-flash]
+    │   ├── data_gatherer_agent (triage/intake) [gemini-3.8-flash]
+    │   └── kg_initialiser_agent [gemini-3.8-flash]
     │       ├── planning_agent (analyzes patient data)
     │       └── LoopAgent (max_iterations=3)
     │           ├── build_agent (bulk_add_nodes, bulk_add_relationships)
     │           └── logic_checker_agent (validate, exit_loop)
     │
-    ├── research_agent [gemini-2.5-pro root]
-    │   ├── research_topics (generates prioritized list) [gemini-2.5-flash]
+    ├── research_agent [gemini-3.8-flash root]
+    │   ├── research_topics (generates prioritized list) [gemini-3.8-flash]
     │   ├── LoopAgent (max_iterations=10)
-    │   │   └── research_agent (google_search, url_context) [gemini-2.5-flash]
-    │   └── kg_agent (knowledge enrichment) [gemini-2.5-flash]
+    │   │   └── research_agent (google_search, url_context) [gemini-3.8-flash]
+    │   └── kg_agent (knowledge enrichment) [gemini-3.8-flash]
     │       └── LoopAgent (max_iterations=5)
     │           ├── knowledge_graph_agent (bulk add nodes/rels)
     │           └── enrichment_checker (validate, exit_loop)
     │
-    └── clinical_agent [gemini-2.5-flash]
+    └── clinical_agent [gemini-3.8-flash]
         └── LoopAgent (max_iterations=3)
             ├── clinical_manager (16 specialist AgentTools)
             │   ├── cardiology_agent
@@ -149,7 +149,7 @@ session.state['temp:research_topics_count'] = 5
 ```yaml
 agent_id: oa001
 agent_name: orchestrator_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: >
   The Orchestrator Agent coordinates...
 instruction: |
@@ -622,7 +622,7 @@ from google.adk.tools import load_memory  # Add import
 data_agent = LlmAgent(
     name=data_gatherer_agent_settings.agent_name,
     description=data_gatherer_agent_settings.description,
-    model=Gemini(model_name=data_gatherer_agent_settings.model, retry_options=retry_config),
+    model=Gemini(model=data_gatherer_agent_settings.model, retry_options=retry_config),
     instruction=data_gatherer_agent_settings.instruction + """
     
 **Memory Usage:**
@@ -1136,7 +1136,7 @@ CROSSREF_EMAIL=your-email
 # .profiles/orchestrator_agent.yaml
 agent_id: oa001
 agent_name: orchestrator_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: >
   The Orchestrator Agent coordinates...
   

@@ -25,7 +25,7 @@ agent_tools = get_tools_from_config(hematology_settings.tools)
 hematology_agent = Agent(
     name=hematology_settings.agent_name,
     description=hematology_settings.description,
-    model=Gemini(model_name=hematology_settings.model, retry_options=retry_config),
+    model=Gemini(model=hematology_settings.model, retry_options=retry_config),
     instruction=hematology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

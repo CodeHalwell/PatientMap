@@ -38,7 +38,7 @@ except FileNotFoundError:
 root_agent = Agent(
     name=orchestrator_settings.agent_name,
     description=orchestrator_settings.description,
-    model=Gemini(model_name=orchestrator_settings.model, retry_options=retry_config),
+    model=Gemini(model=orchestrator_settings.model, retry_options=retry_config),
     instruction=orchestrator_settings.instruction,
     sub_agents=[data_manager_agent, research_agent, clinical_agent, agent_report],
 )

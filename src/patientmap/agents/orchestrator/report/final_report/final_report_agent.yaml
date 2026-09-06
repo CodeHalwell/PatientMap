@@ -1,6 +1,6 @@
 agent_id: fraa001
 agent_name: final_report_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: >
   The Final Report Agent synthesizes all research findings, clinical insights, and knowledge
   graph data into a comprehensive patient report. It balances scientific rigor with empathetic,

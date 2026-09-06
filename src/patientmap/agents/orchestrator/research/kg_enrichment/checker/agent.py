@@ -27,7 +27,7 @@ agent_tools = get_tools_from_config(kg_checker_config.tools)
 enrichment_checker = LlmAgent(
     name=kg_checker_config.agent_name,
     description=kg_checker_config.description,
-    model=Gemini(model_name=kg_checker_config.model, retry_options=retry_config),
+    model=Gemini(model=kg_checker_config.model, retry_options=retry_config),
     instruction=kg_checker_config.instruction,
     tools=agent_tools,
 )

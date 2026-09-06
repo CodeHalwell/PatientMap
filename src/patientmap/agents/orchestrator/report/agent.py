@@ -25,7 +25,7 @@ agent_tools = get_tools_from_config(report_manager_settings.tools)
 root_agent = LlmAgent(
     name=report_manager_settings.agent_name,
     description=report_manager_settings.description,
-    model=Gemini(model_name=report_manager_settings.model, retry_options=retry_config),
+    model=Gemini(model=report_manager_settings.model, retry_options=retry_config),
     instruction=report_manager_settings.instruction,
     sub_agents=[reporting_agent, final_report_agent],
     tools=agent_tools,

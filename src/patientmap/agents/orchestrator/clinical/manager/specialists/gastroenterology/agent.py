@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(gastroenterology_settings.tools)
 gastroenterology_agent = Agent(
     name=gastroenterology_settings.agent_name,
     description=gastroenterology_settings.description,
-    model=Gemini(model_name=gastroenterology_settings.model, retry_options=retry_config),
+    model=Gemini(model=gastroenterology_settings.model, retry_options=retry_config),
     instruction=gastroenterology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

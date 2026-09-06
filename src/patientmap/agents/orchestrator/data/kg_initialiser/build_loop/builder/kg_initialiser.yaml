@@ -1,6 +1,6 @@
 agent_id: kgia01
 agent_name: knowledge_graph_building_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   An agent that builds and refines a knowledge graph based on patient data and clinical research findings.
 instruction: |

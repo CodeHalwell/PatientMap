@@ -1,6 +1,6 @@
 agent_id: nu01
 agent_name: nutrition_dietetics_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A registered dietitian nutritionist agent specializing in medical nutrition therapy for chronic disease management.
 instruction: |

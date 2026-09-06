@@ -28,7 +28,7 @@ agent_tools = get_tools_from_config(settings.tools)
 clinical_kg_enrichment_agent = Agent(
     name=settings.agent_name,
     description=settings.description,
-    model=Gemini(model_name=settings.model, retry_options=retry_config),
+    model=Gemini(model=settings.model, retry_options=retry_config),
     instruction=settings.instruction,
     tools=agent_tools
 )

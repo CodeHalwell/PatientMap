@@ -25,7 +25,7 @@ agent_tools = get_tools_from_config(topics_config.tools)
 research_topics = Agent(
     name=topics_config.agent_name,
     description=topics_config.description,
-    model=Gemini(model_name=topics_config.model, retry_options=retry_config),
+    model=Gemini(model=topics_config.model, retry_options=retry_config),
     instruction=topics_config.instruction,
     output_key="research_topics_list",
     tools=agent_tools,

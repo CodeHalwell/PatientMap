@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(knowledge_graph_agent_settings.tools)
 knowledge_graph_agent = Agent(
     name=knowledge_graph_agent_settings.agent_name,
     description=knowledge_graph_agent_settings.description,
-    model=Gemini(model_name=knowledge_graph_agent_settings.model, retry_options=retry_config),
+    model=Gemini(model=knowledge_graph_agent_settings.model, retry_options=retry_config),
     instruction=knowledge_graph_agent_settings.instruction,
     tools=agent_tools
 )

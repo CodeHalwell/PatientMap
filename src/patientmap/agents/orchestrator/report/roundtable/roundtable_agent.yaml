@@ -1,6 +1,6 @@
 agent_id: roundtable_report_agent
 agent_name: roundtable_report_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: >
   Roundtable Report Agent coordinating multiple review agents for comprehensive report generation via consensus-driven discussion.
 instruction: >

@@ -1,6 +1,6 @@
 agent_id: ckgea001
 agent_name: clinical_knowledge_graph_enrichment_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: An agent that enriches the patient knowledge graph with clinical analysis, specialist recommendations, and treatment plans from the clinical research phase.
 instruction: |
   You are a clinical knowledge graph enrichment specialist. Your role is to integrate clinical analysis and recommendations into the patient knowledge graph.

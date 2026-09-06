@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(pharmacy_settings.tools)
 pharmacy_agent = Agent(
     name=pharmacy_settings.agent_name,
     description=pharmacy_settings.description,
-    model=Gemini(model_name=pharmacy_settings.model, retry_options=retry_config),
+    model=Gemini(model=pharmacy_settings.model, retry_options=retry_config),
     instruction=pharmacy_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

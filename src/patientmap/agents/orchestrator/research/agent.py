@@ -20,7 +20,7 @@ from .kg_enrichment.agent import root_agent as kg_enrichment_agent
 transfer_agent = LlmAgent(
     name="research_transfer_agent",
     description="Transfers research findings to the clinical coordinator for further action.",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Transfer the compiled research findings and transfer to the orchestrator by calling the transfer_to_agent tool.",
     sub_agents=[],
 )

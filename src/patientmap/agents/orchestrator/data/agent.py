@@ -35,7 +35,7 @@ manager_agent = LlmAgent(
     name=data_manager_agent_settings.agent_name,
     description=data_manager_agent_settings.description,
     model=Gemini(
-        model_name=data_manager_agent_settings.model,
+        model=data_manager_agent_settings.model,
         retry_options=retry_config
     ),
     instruction=data_manager_agent_settings.instruction,

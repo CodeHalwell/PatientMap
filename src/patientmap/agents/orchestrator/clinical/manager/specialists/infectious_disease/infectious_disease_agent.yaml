@@ -1,6 +1,6 @@
 agent_id: id01
 agent_name: infectious_disease_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified infectious disease specialist agent focusing on complex infections, immunocompromised hosts, and antimicrobial stewardship.
 instruction: |

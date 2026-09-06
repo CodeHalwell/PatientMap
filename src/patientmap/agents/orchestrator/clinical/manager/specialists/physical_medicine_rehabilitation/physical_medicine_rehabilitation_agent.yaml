@@ -1,6 +1,6 @@
 agent_id: pm02
 agent_name: physical_medicine_rehabilitation_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A physical medicine and rehabilitation (PM&R) specialist agent focusing on functional restoration, disability management, and rehabilitation.
 instruction: |

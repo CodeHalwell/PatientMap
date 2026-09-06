@@ -1,6 +1,6 @@
 agent_id: ra01
 agent_name: research_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: |
   A clinical research agent that systematically conducts literature searches to gather evidence-based information for patient care optimization.
 instruction: |

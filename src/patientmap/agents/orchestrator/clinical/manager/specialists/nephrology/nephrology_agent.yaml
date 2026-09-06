@@ -1,6 +1,6 @@
 agent_id: na01
 agent_name: nephrology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified nephrologist agent specializing in kidney disease and renal medication management.
 instruction: |

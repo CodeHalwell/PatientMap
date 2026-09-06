@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(infectious_disease_settings.tools)
 infectious_disease_agent = Agent(
     name=infectious_disease_settings.agent_name,
     description=infectious_disease_settings.description,
-    model=Gemini(model_name=infectious_disease_settings.model, retry_options=retry_config),
+    model=Gemini(model=infectious_disease_settings.model, retry_options=retry_config),
     instruction=infectious_disease_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

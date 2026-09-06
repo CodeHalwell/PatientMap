@@ -1,6 +1,6 @@
 agent_id: ca01
 agent_name: clinical_director_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: |
    Chief Clinical Director coordinating multidisciplinary specialist consultations for comprehensive patient care.
    Orchestrates specialist assessments and synthesizes recommendations into unified care plans.

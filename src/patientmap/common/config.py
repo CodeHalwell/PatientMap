@@ -11,7 +11,7 @@ class AgentConfig:
         return AgentSettings(
             agent_id=self.profile.get("agent_id", "default_agent"),
             agent_name=self.profile.get("agent_name", "Default Agent"),
-            model=self.profile.get("model", "gemini-2.5-flash"),
+            model=self.profile.get("model", "gemini-3.8-flash"),
             instruction=self.profile.get("instruction", ""),
             description=self.profile.get("description", ""),
             tools=self.profile.get("tools", []),

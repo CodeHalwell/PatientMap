@@ -1,6 +1,6 @@
 agent_id: rvaa002
 agent_name: review_agent_2
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: >
   Review Agent 2 participates in roundtable clinical discussions with peer review agents,
   analyzing investigation results from prior phases to discuss diagnosis, prognosis,
