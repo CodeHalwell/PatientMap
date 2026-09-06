@@ -1,6 +1,6 @@
 agent_id: rvaa003
 agent_name: review_agent_3
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: >
   Review Agent 3 participates in roundtable clinical discussions with other review agents
   to evaluate diagnostic findings, prognosis, treatment options, and next steps. This agent

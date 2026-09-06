@@ -1,6 +1,6 @@
 agent_id: gi01
 agent_name: gastroenterology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified gastroenterologist agent specializing in digestive diseases, liver disorders, and gastrointestinal complications.
 instruction: |

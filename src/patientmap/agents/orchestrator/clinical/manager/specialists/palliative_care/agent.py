@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(palliative_settings.tools)
 palliative_agent = Agent(
     name=palliative_settings.agent_name,
     description=palliative_settings.description,
-    model=Gemini(model_name=palliative_settings.model, retry_options=retry_config),
+    model=Gemini(model=palliative_settings.model, retry_options=retry_config),
     instruction=palliative_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

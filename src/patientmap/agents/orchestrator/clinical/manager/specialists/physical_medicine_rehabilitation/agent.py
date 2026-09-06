@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(pmr_settings.tools)
 physical_agent = Agent(
     name=pmr_settings.agent_name,
     description=pmr_settings.description,
-    model=Gemini(model_name=pmr_settings.model, retry_options=retry_config),
+    model=Gemini(model=pmr_settings.model, retry_options=retry_config),
     instruction=pmr_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

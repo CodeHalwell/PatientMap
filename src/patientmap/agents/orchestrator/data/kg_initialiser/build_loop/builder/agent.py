@@ -28,7 +28,7 @@ build_agent = LlmAgent(
     name=builder_settings.agent_name,
     description=builder_settings.description,
     model=Gemini(
-        model_name=builder_settings.model,
+        model=builder_settings.model,
         retry_options=retry_config
     ),
     instruction=builder_settings.instruction,

@@ -1,6 +1,6 @@
 agent_id: dg01
 agent_name: data_gatherer_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   This agent acts as a triage specialist, conducting comprehensive initial assessments by gathering clinical data from users and preparing information for subsequent specialized agents.
 instruction: |

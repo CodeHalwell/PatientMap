@@ -1,6 +1,6 @@
 agent_id: ra01
 agent_name: research_topics_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   An agent that analyzes patient profiles to identify and prioritize key research topics for evidence-based clinical investigation.
 instruction: |

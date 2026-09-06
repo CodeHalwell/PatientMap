@@ -3,6 +3,12 @@
 **Last Updated**: November 8, 2025  
 **Version**: Python ADK v1.8.0+
 
+> **Note**: PatientMap now runs on `google-adk>=2.8.0`. This guide was written
+> against ADK 1.x and has not been revised for the 2.x workflow runtime, so
+> treat its API details as historical. For the current API see
+> <https://adk.dev/2.0/> and the ADK 2.0 migration notes. Model IDs in the
+> examples have been refreshed to `gemini-3.8-flash` to match the project.
+
 ---
 
 ## Table of Contents
@@ -99,7 +105,7 @@ from google.adk.tools import google_search
 
 agent = Agent(
     name="assistant",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant.",
     description="An assistant that can search the web.",
     tools=[google_search]
@@ -170,7 +176,7 @@ from google.adk.tools import google_search
 
 agent = LlmAgent(
     name="search_assistant",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant.",
     description="An assistant that can search the web.",
     tools=[google_search]
@@ -187,14 +193,14 @@ from google.adk.agents import LlmAgent
 # Define specialized agents
 greeter = LlmAgent(
     name="greeter",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Greets users and provides welcoming messages.",
     instruction="You greet users warmly and professionally."
 )
 
 task_executor = LlmAgent(
     name="task_executor",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Executes tasks and provides solutions.",
     instruction="You execute tasks efficiently.",
     tools=[google_search]
@@ -203,7 +209,7 @@ task_executor = LlmAgent(
 # Create coordinator with sub-agents
 coordinator = LlmAgent(
     name="coordinator",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Coordinates greetings and task execution.",
     instruction="Delegate tasks to appropriate sub-agents.",
     sub_agents=[greeter, task_executor]
@@ -220,20 +226,20 @@ from google.adk.agents import SequentialAgent, LlmAgent
 # Define agents for each step
 research_agent = LlmAgent(
     name="researcher",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Research the topic thoroughly.",
     tools=[google_search]
 )
 
 writer_agent = LlmAgent(
     name="writer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Write a comprehensive article based on the research."
 )
 
 editor_agent = LlmAgent(
     name="editor",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Edit and polish the article for publication."
 )
 
@@ -254,20 +260,20 @@ from google.adk.agents import ParallelAgent, LlmAgent
 
 fact_checker = LlmAgent(
     name="fact_checker",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Verify facts in the content.",
     tools=[google_search]
 )
 
 sentiment_analyzer = LlmAgent(
     name="sentiment_analyzer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Analyze sentiment of the content."
 )
 
 seo_optimizer = LlmAgent(
     name="seo_optimizer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Suggest SEO improvements."
 )
 
@@ -289,7 +295,7 @@ from google.adk.tools import exit_loop
 
 problem_solver = LlmAgent(
     name="problem_solver",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="""Solve the problem step by step.
     Call exit_loop when you have a complete solution.""",
     tools=[exit_loop]
@@ -320,7 +326,7 @@ from google.adk.tools import (
 
 agent = Agent(
     name="web_researcher",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Research topics using web search.",
     tools=[google_search, url_context]
 )
@@ -365,7 +371,7 @@ async def check_prime(nums: list[int]) -> str:
         if primes else "No prime numbers found."
 
 dice_agent = Agent(
-    model='gemini-2.5-flash',
+    model='gemini-3.8-flash',
     name='dice_agent',
     description='Agent that can roll dice and check prime numbers.',
     instruction="""You roll dice and check prime numbers.
@@ -386,7 +392,7 @@ bigquery_tools = BigQueryToolset(project_id="my-project")
 # Create agent with BigQuery tools
 data_analyst = Agent(
     name="data_analyst",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Analyze data using BigQuery.",
     tools=bigquery_tools.get_tools()
 )
@@ -417,7 +423,7 @@ api_tool = RestAPITool(
 
 secure_agent = Agent(
     name="secure_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Use the secure API to access protected resources.",
     tools=[api_tool]
 )
@@ -449,7 +455,7 @@ delete_tool = FunctionTool(
 
 safe_agent = Agent(
     name="safe_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Help manage files safely.",
     tools=[delete_tool]
 )
@@ -467,7 +473,7 @@ from google.adk.code_executors import (
 # Built-in code executor
 code_agent = Agent(
     name="code_executor",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Execute Python code to solve problems.",
     code_executor=BuiltInCodeExecutor()
 )
@@ -475,7 +481,7 @@ code_agent = Agent(
 # Secure sandboxed executor
 sandbox_agent = Agent(
     name="sandbox_executor",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Execute code safely in a sandboxed environment.",
     code_executor=AgentEngineSandboxCodeExecutor()
 )
@@ -499,7 +505,7 @@ compute_tool = LongRunningFunctionTool(func=long_computation)
 
 agent = Agent(
     name="compute_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Execute long computations.",
     tools=[compute_tool]
 )
@@ -618,7 +624,7 @@ from google.adk.memory import InMemoryMemoryService
 # Define root agent
 root_agent = Agent(
     name="assistant",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant."
 )
 
@@ -704,7 +710,7 @@ from google.adk.sessions import InMemorySessionService
 # Create agent to evaluate
 agent = Agent(
     name="test_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant."
 )
 
@@ -872,7 +878,7 @@ from google.genai import types
 # Create agent with static instruction for caching
 agent = Agent(
     name="cached_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     static_instruction=types.Content(
         parts=[types.Part(text="You are an expert in Python programming. " * 100)]
     ),
@@ -1000,7 +1006,7 @@ search_tool = ToolConfig(
 
 agent = Agent(
     name="callback_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Use tools with callbacks for audit logging.",
     tools=[search_tool]
 )
@@ -1035,7 +1041,7 @@ class AuditModelCallback(ModelCallback):
 # Create agent with model callbacks
 agent = Agent(
     name="audited_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Execute queries with model callbacks.",
     callbacks=[AuditModelCallback()]
 )
@@ -1076,7 +1082,7 @@ class ChatHistoryPlugin(Plugin):
 # Use plugins in agent
 agent = Agent(
     name="plugin_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Process queries with plugin support.",
     plugins=[SecretFilterPlugin(), ChatHistoryPlugin()]
 )
@@ -1097,7 +1103,7 @@ mcp = FastMCP(name="adk_agent_server")
 # Initialize ADK agent
 agent = Agent(
     name="analysis_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Analyze data and provide insights.",
     tools=[data_analysis_tool]
 )
@@ -1219,7 +1225,7 @@ async def create_mcp_agent():
     
     agent = Agent(
         name="mcp_agent",
-        model="gemini-2.5-flash",
+        model="gemini-3.8-flash",
         instruction="Use MCP tools to search for flights.",
         tools=tools
     )
@@ -1336,7 +1342,7 @@ from google.adk.agents import LlmAgent
 # Define specialized agents
 linkedin_agent = LlmAgent(
     name="linkedin_specialist",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Searches and analyzes LinkedIn data.",
     instruction="Find and analyze LinkedIn profiles and data.",
     tools=[linkedin_search_tool]
@@ -1344,7 +1350,7 @@ linkedin_agent = LlmAgent(
 
 notion_agent = LlmAgent(
     name="notion_specialist",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Manages Notion workspace data.",
     instruction="Read and manage Notion pages and databases.",
     tools=[notion_tool]
@@ -1352,7 +1358,7 @@ notion_agent = LlmAgent(
 
 research_agent = LlmAgent(
     name="research_specialist",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Performs deep research tasks.",
     instruction="Conduct thorough research using available tools.",
     tools=[google_search]
@@ -1361,7 +1367,7 @@ research_agent = LlmAgent(
 # Create coordinator
 coordinator = LlmAgent(
     name="coordinator",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Orchestrates specialized agents.",
     instruction="""You are a coordinator that delegates tasks to specialized agents.
     - For LinkedIn data: delegate to linkedin_specialist
@@ -1383,20 +1389,20 @@ from google.adk.agents import ParallelAgent, LlmAgent
 # Create specialized analyzers
 grammar_checker = LlmAgent(
     name="grammar_checker",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Check grammar, spelling, and punctuation."
 )
 
 fact_checker = LlmAgent(
     name="fact_checker",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Verify factual accuracy and consistency.",
     tools=[google_search]
 )
 
 style_analyzer = LlmAgent(
     name="style_analyzer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Analyze writing style, tone, and clarity."
 )
 
@@ -1418,7 +1424,7 @@ from google.adk.agents import SequentialAgent, LlmAgent
 # Step 1: Research
 research_agent = LlmAgent(
     name="researcher",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Conduct thorough research on the topic.",
     tools=[google_search, url_context]
 )
@@ -1426,14 +1432,14 @@ research_agent = LlmAgent(
 # Step 2: Write
 writer_agent = LlmAgent(
     name="writer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Write comprehensive content based on research findings.",
 )
 
 # Step 3: Edit
 editor_agent = LlmAgent(
     name="editor",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Edit and polish the content for publication.",
 )
 
@@ -1454,7 +1460,7 @@ from google.adk.agents import LoopAgent, LlmAgent
 
 refinement_agent = LlmAgent(
     name="refinement_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="""Improve the provided solution iteratively.
     
     For each iteration:
@@ -1484,21 +1490,21 @@ from google.adk.agents import LlmAgent
 # Specialized agents
 support_agent = LlmAgent(
     name="support_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Handles customer support requests",
     instruction="Provide helpful customer support."
 )
 
 billing_agent = LlmAgent(
     name="billing_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Handles billing inquiries",
     instruction="Handle billing and account questions."
 )
 
 technical_agent = LlmAgent(
     name="technical_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Handles technical issues",
     instruction="Resolve technical problems.",
     tools=[google_search]
@@ -1507,7 +1513,7 @@ technical_agent = LlmAgent(
 # Router
 router = LlmAgent(
     name="router",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Routes requests to appropriate agents",
     instruction="""Analyze the incoming request and route it:
     - For general support: route to support_agent
@@ -1538,7 +1544,7 @@ import asyncio
 # Define independent agents
 analyst_agent = Agent(
     name="analyst",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Performs data analysis",
     instruction="Analyze data and provide insights.",
     tools=[analysis_tools]
@@ -1546,7 +1552,7 @@ analyst_agent = Agent(
 
 writer_agent = Agent(
     name="writer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="Writes reports",
     instruction="Write comprehensive reports based on analysis.",
 )
@@ -1758,7 +1764,7 @@ from google.adk.tools import google_search
 
 root_agent = Agent(
     name="my_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant.",
     description="Agent description.",
     tools=[google_search]
@@ -1936,7 +1942,7 @@ from google.genai import types
 
 agent = Agent(
     name="assistant",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="You are a helpful assistant.",
     tools=[google_search]
 )
@@ -1971,21 +1977,21 @@ from google.adk.agents import LlmAgent
 # Specialized agents
 researcher = LlmAgent(
     name="researcher",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Research topics thoroughly.",
     tools=[google_search]
 )
 
 writer = LlmAgent(
     name="writer",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Write based on research."
 )
 
 # Coordinator
 coordinator = LlmAgent(
     name="coordinator",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     instruction="Coordinate research and writing.",
     sub_agents=[researcher, writer]
 )

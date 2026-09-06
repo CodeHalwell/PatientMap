@@ -190,7 +190,7 @@ agent_tools = get_tools_from_config(config.tools)
 
 # Create agent with tools
 agent = Agent(
-    model="gemini-2.0-flash-exp",
+    model="gemini-3.8-flash",
     tools=agent_tools,
     # ...
 )

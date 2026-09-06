@@ -38,7 +38,7 @@ except FileNotFoundError:
 manager_agent = LlmAgent(
     name=data_manager_agent_settings.agent_name,
     description=data_manager_agent_settings.description,
-    model=Gemini(model_name=data_manager_agent_settings.model, retry_options=retry_config),
+    model=Gemini(model=data_manager_agent_settings.model, retry_options=retry_config),
     instruction=data_manager_agent_settings.instruction,
     sub_agents=[data_agent, kg_initialiser_agent],
 )
@@ -96,7 +96,7 @@ manager_agent = LlmAgent(
     name=data_manager_agent_settings.agent_name,
     description=data_manager_agent_settings.description,
     model=Gemini(
-        model_name=data_manager_agent_settings.model,
+        model=data_manager_agent_settings.model,
         retry_options=retry_config
     ),
     instruction=data_manager_agent_settings.instruction,
@@ -165,7 +165,7 @@ except FileNotFoundError:
 triage_agent = LlmAgent(
     name=data_gatherer_settings.agent_name,
     description=data_gatherer_settings.description,
-    model=Gemini(model_name=data_gatherer_settings.model, retry_options=retry_config),
+    model=Gemini(model=data_gatherer_settings.model, retry_options=retry_config),
     instruction=data_gatherer_settings.instruction,
 )
 
@@ -211,7 +211,7 @@ triage_agent = LlmAgent(
     name=data_gatherer_settings.agent_name,
     description=data_gatherer_settings.description,
     model=Gemini(
-        model_name=data_gatherer_settings.model,
+        model=data_gatherer_settings.model,
         retry_options=retry_config
     ),
     instruction=data_gatherer_settings.instruction,
@@ -280,7 +280,7 @@ except FileNotFoundError:
 planning_agent = LlmAgent(
     name="Knowledge_graph_planning_agent",
     description="An agent that extracts and plans the knowledge graph structure...",
-    model=Gemini(model_name=kg_init_config.model, retry_options=retry_config),
+    model=Gemini(model=kg_init_config.model, retry_options=retry_config),
     instruction="""Analyze the patient data...""",
     output_key="kg_plan"
 )
@@ -289,7 +289,7 @@ planning_agent = LlmAgent(
 build_agent = LlmAgent(
     name=kg_init_config.agent_name,
     description=kg_init_config.description,
-    model=Gemini(model_name=kg_init_config.model, retry_options=retry_config),
+    model=Gemini(model=kg_init_config.model, retry_options=retry_config),
     instruction=kg_init_config.instruction,
     tools=[initialize_patient_graph, bulk_add_nodes, ...],
 )
@@ -298,7 +298,7 @@ build_agent = LlmAgent(
 logic_checker_agent = LlmAgent(
     name=kg_checker_config.agent_name,
     description=kg_checker_config.description,
-    model=Gemini(model_name=kg_checker_config.model, retry_options=retry_config),
+    model=Gemini(model=kg_checker_config.model, retry_options=retry_config),
     instruction=kg_checker_config.instruction,
     tools=[validate_graph_structure, exit_loop, ...],
 )
@@ -315,7 +315,7 @@ loop_agent = LoopAgent(
 kg_initialiser_agent = LlmAgent(
     name="Knowledge_graph_initialiser_agent",
     description="Orchestrates knowledge graph creation workflow.",
-    model=Gemini(model_name=kg_init_config.model, retry_options=retry_config),
+    model=Gemini(model=kg_init_config.model, retry_options=retry_config),
     instruction="""You are the Knowledge Graph Initialiser coordinator...""",
     sub_agents=[planning_agent, loop_agent],
 )
@@ -361,7 +361,7 @@ kg_initialiser_agent = LlmAgent(
     name=kg_init_settings.agent_name,
     description=kg_init_settings.description,
     model=Gemini(
-        model_name=kg_init_settings.model,
+        model=kg_init_settings.model,
         retry_options=retry_config
     ),
     instruction=kg_init_settings.instruction,
@@ -405,7 +405,7 @@ planning_agent = LlmAgent(
     name=planning_settings.agent_name,
     description=planning_settings.description,
     model=Gemini(
-        model_name=planning_settings.model,
+        model=planning_settings.model,
         retry_options=retry_config
     ),
     instruction=planning_settings.instruction,
@@ -497,7 +497,7 @@ build_agent = LlmAgent(
     name=builder_settings.agent_name,
     description=builder_settings.description,
     model=Gemini(
-        model_name=builder_settings.model,
+        model=builder_settings.model,
         retry_options=retry_config
     ),
     instruction=builder_settings.instruction,
@@ -566,7 +566,7 @@ logic_checker_agent = LlmAgent(
     name=checker_settings.agent_name,
     description=checker_settings.description,
     model=Gemini(
-        model_name=checker_settings.model,
+        model=checker_settings.model,
         retry_options=retry_config
     ),
     instruction=checker_settings.instruction,
@@ -736,7 +736,7 @@ clinical_manager = Agent(
     name=clinical_settings.agent_name,
     description=clinical_settings.description,
     model=Gemini(
-        model_name=clinical_settings.model,
+        model=clinical_settings.model,
         retry_options=retry_config
     ),
     instruction=clinical_settings.instruction,

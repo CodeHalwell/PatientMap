@@ -1,6 +1,6 @@
 agent_id: oa001
 agent_name: orchestrator_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: >
   The Orchestrator Agent coordinates the activities of various specialized agents within the 
   WellInformed system. It manages task delegation, monitors agent performance, and ensures seamless 

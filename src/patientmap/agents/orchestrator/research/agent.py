@@ -7,6 +7,9 @@ Uses deterministic SequentialAgent for reliable phase transitions.
 from __future__ import annotations
 
 from google.adk.agents import SequentialAgent, LlmAgent
+from google.adk.models.google_llm import Gemini
+from patientmap.common.helper_functions import retry_config
+from patientmap.common.models import DEFAULT_MODEL
 
 from pathlib import Path
 
@@ -20,7 +23,7 @@ from .kg_enrichment.agent import root_agent as kg_enrichment_agent
 transfer_agent = LlmAgent(
     name="research_transfer_agent",
     description="Transfers research findings to the clinical coordinator for further action.",
-    model="gemini-2.5-flash",
+    model=Gemini(model=DEFAULT_MODEL, retry_options=retry_config),
     instruction="Transfer the compiled research findings and transfer to the orchestrator by calling the transfer_to_agent tool.",
     sub_agents=[],
 )

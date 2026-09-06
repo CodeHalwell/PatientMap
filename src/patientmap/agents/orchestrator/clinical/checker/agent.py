@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(config.tools)
 checker_agent = LlmAgent(
     name=config.agent_name,
     description=config.description,
-    model=Gemini(model_name=config.model, retry_options=retry_config),
+    model=Gemini(model=config.model, retry_options=retry_config),
     instruction=config.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

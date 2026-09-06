@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(nephrology_settings.tools)
 nephrology_agent = Agent(
     name=nephrology_settings.agent_name,
     description=nephrology_settings.description,
-    model=Gemini(model_name=nephrology_settings.model, retry_options=retry_config),
+    model=Gemini(model=nephrology_settings.model, retry_options=retry_config),
     instruction=nephrology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

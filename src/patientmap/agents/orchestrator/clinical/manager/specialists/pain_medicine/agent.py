@@ -27,7 +27,7 @@ agent_tools = get_tools_from_config(pain_settings.tools)
 pain_agent = Agent(
     name=pain_settings.agent_name,
     description=pain_settings.description,
-    model=Gemini(model_name=pain_settings.model, retry_options=retry_config),
+    model=Gemini(model=pain_settings.model, retry_options=retry_config),
     instruction=pain_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

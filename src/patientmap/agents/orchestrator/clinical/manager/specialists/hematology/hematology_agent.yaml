@@ -1,6 +1,6 @@
 agent_id: he01
 agent_name: hematology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified hematologist agent specializing in blood disorders, anemia, coagulation disorders, and anticoagulation management.
 instruction: |

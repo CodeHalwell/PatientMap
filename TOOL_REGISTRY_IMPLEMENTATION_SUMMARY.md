@@ -273,7 +273,7 @@ agent_tools = get_tools_from_config(config.tools)  # ✅ Load tools dynamically
 my_agent = Agent(
     name=config.agent_name,
     description=config.description,
-    model=Gemini(model_name=config.model, retry_options=retry_config),
+    model=Gemini(model=config.model, retry_options=retry_config),
     instruction=config.instruction,
     tools=agent_tools,  # ✅ Use registry tools
 )
@@ -284,7 +284,7 @@ root_agent = my_agent
 **Corresponding YAML:**
 ```yaml
 agent_name: my_agent
-model: gemini-2.5-pro
+model: gemini-3.8-flash
 description: Agent description
 instruction: |
   Agent instructions...

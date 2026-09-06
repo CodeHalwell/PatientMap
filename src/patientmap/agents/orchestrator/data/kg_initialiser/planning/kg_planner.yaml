@@ -1,6 +1,6 @@
 agent_id: kgp01
 agent_name: Knowledge_graph_planning_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   An agent that extracts and plans the knowledge graph structure from actual patient data provided in context.
 instruction: |

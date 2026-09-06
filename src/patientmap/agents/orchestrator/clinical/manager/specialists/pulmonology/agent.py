@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(pulmonology_settings.tools)
 pulmonology_agent = Agent(
     name=pulmonology_settings.agent_name,
     description=pulmonology_settings.description,
-    model=Gemini(model_name=pulmonology_settings.model, retry_options=retry_config),
+    model=Gemini(model=pulmonology_settings.model, retry_options=retry_config),
     instruction=pulmonology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

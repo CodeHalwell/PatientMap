@@ -8,7 +8,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from google.adk.agents import SequentialAgent, LlmAgent
-from patientmap.common.helper_functions import handle_tool_error
+from google.adk.models.google_llm import Gemini
+from patientmap.common.helper_functions import handle_tool_error, retry_config
+from patientmap.common.models import DEFAULT_MODEL
 
 # Import sub-agents using relative imports
 from .planning.agent import root_agent as planning_agent
@@ -20,7 +22,7 @@ current_dir = Path(__file__).parent
 summary_agent = LlmAgent(
     name="summary_of_kg",
     description="Summarises the output from the knowldge graph building process.",
-    model="gemini-2.5-flash",
+    model=Gemini(model=DEFAULT_MODEL, retry_options=retry_config),
     instruction="Summarise the output from the knowledge graph building process to report back to the data manager.",
     sub_agents=[],
     on_tool_error_callback=handle_tool_error,

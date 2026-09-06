@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(neurology_settings.tools)
 neurology_agent = Agent(
     name=neurology_settings.agent_name,
     description=neurology_settings.description,
-    model=Gemini(model_name=neurology_settings.model, retry_options=retry_config),
+    model=Gemini(model=neurology_settings.model, retry_options=retry_config),
     instruction=neurology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

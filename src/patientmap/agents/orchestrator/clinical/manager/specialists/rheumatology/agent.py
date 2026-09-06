@@ -27,7 +27,7 @@ agent_tools = get_tools_from_config(rheumatology_settings.tools)
 rheumatology_agent = Agent(
     name=rheumatology_settings.agent_name,
     description=rheumatology_settings.description,
-    model=Gemini(model_name=rheumatology_settings.model, retry_options=retry_config),
+    model=Gemini(model=rheumatology_settings.model, retry_options=retry_config),
     instruction=rheumatology_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

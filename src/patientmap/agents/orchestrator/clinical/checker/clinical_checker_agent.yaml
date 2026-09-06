@@ -1,6 +1,6 @@
 agent_id: clinical_checker_agent
 agent_name: clinical_checker_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   Validates and verifies the responses provided by the Clinical Researcher Agent for accuracy and reliability.
 instruction: |

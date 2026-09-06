@@ -1,6 +1,6 @@
 agent_id: kga001
 agent_name: knowledge_graph_enrichment_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: An agent that enriches existing patient knowledge graphs with research findings, clinical trials, and evidence-based literature.
 instruction: |
   You are a clinical knowledge graph enrichment specialist. Your role is to integrate research findings into the existing patient knowledge graph.

@@ -200,7 +200,7 @@ agent = LlmAgent(
 ```yaml
 agent_id: kg_builder
 agent_name: Knowledge Graph Builder
-model: gemini-2.0-flash-exp
+model: gemini-3.8-flash
 tools:
   - neo4j_initialize_patient_graph
   - neo4j_bulk_add_conditions
@@ -248,7 +248,7 @@ tools = get_tools_from_config(config.tools)
 
 agent = LlmAgent(
     name=config.agent_name,
-    model=Gemini(model_name=config.model),
+    model=Gemini(model=config.model),
     instruction=config.instruction,
     tools=tools  # Includes show_my_available_tools
 )

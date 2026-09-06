@@ -24,7 +24,7 @@ This document establishes standards for documenting tool access in agent YAML co
 ```yaml
 agent_id: example_id
 agent_name: example_agent
-model: 'gemini-2.5-pro' # or gemini-2.5-flash
+model: 'gemini-3.8-flash'
 description: >
   Brief description of agent role
 instruction: |
@@ -48,7 +48,7 @@ tools: []
 ```yaml
 agent_id: example_id
 agent_name: example_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: >
   Brief description of agent role
 instruction: |
@@ -80,7 +80,7 @@ tools: [tool_name_one, tool_name_two, tool_name_three]  # Must match instruction
 ```yaml
 agent_id: ca01
 agent_name: cardiology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified [specialty] agent specializing in [domain].
 instruction: |

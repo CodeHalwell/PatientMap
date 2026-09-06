@@ -28,7 +28,7 @@ roundtable_tools = get_tools_from_config(roundtable_agent_config.tools)
 review_agent_1 = LlmAgent(
     name=review_agent_1_config.agent_name,
     description=review_agent_1_config.description,
-    model=Gemini(model_name=review_agent_1_config.model, retry_options=retry_config),
+    model=Gemini(model=review_agent_1_config.model, retry_options=retry_config),
     instruction=review_agent_1_config.instruction,
     tools=review_1_tools,
     on_tool_error_callback=handle_tool_error,
@@ -37,7 +37,7 @@ review_agent_1 = LlmAgent(
 review_agent_2 = LlmAgent(
     name=review_agent_2_config.agent_name,
     description=review_agent_2_config.description,
-    model=Gemini(model_name=review_agent_2_config.model, retry_options=retry_config),
+    model=Gemini(model=review_agent_2_config.model, retry_options=retry_config),
     instruction=review_agent_2_config.instruction,
     tools=review_2_tools,
     on_tool_error_callback=handle_tool_error,
@@ -46,7 +46,7 @@ review_agent_2 = LlmAgent(
 review_agent_3 = LlmAgent(
     name=review_agent_3_config.agent_name,
     description=review_agent_3_config.description,
-    model=Gemini(model_name=review_agent_3_config.model, retry_options=retry_config),
+    model=Gemini(model=review_agent_3_config.model, retry_options=retry_config),
     instruction=review_agent_3_config.instruction,
     tools=review_3_tools,
     on_tool_error_callback=handle_tool_error,
@@ -62,7 +62,7 @@ roundtable_loop = LoopAgent(
 summary_agent = LlmAgent(
     name="roundtable_summary_agent",
     description="Summarizes the outcomes of the roundtable discussion into a coherent report.",
-    model=Gemini(model_name=roundtable_agent_config.model, retry_options=retry_config),
+    model=Gemini(model=roundtable_agent_config.model, retry_options=retry_config),
     instruction="Summarize the key points and consensus from the roundtable discussion into a final report.",
     tools=roundtable_tools,
     on_tool_error_callback=handle_tool_error,

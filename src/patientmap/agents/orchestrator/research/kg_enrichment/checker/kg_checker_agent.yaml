@@ -1,6 +1,6 @@
 agent_id: kgia01
 agent_name: Knowledge_graph_logic_checker_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   An agent that checks the logical consistency of the knowledge graph based on patient data and clinical research findings.
 instruction: |

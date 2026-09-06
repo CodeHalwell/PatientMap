@@ -1,6 +1,6 @@
 agent_id: rvaa001
 agent_name: review_agent_1
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: >
   Review Agent 1 participates in a collaborative roundtable discussion with other specialist
   review agents. This agent analyzes investigations, explores differential diagnoses, assesses

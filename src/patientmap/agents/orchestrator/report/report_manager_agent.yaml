@@ -1,6 +1,6 @@
 agent_id: repmaa001
 agent_name: report_manager_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: >
   The Report Manager Agent coordinates the final review phase by delegating to the specialist
   roundtable for discussion, then to the final report writer. It maintains workflow state,

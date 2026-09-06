@@ -27,7 +27,7 @@ planning_agent = LlmAgent(
     name=kg_init_config.agent_name,
     description=kg_init_config.description,
     model=Gemini(
-        model_name=kg_init_config.model,
+        model=kg_init_config.model,
         retry_options=retry_config
     ),
     instruction=kg_init_config.instruction,

@@ -54,7 +54,7 @@ except (FileNotFoundError) as e:
 clinical_manager = Agent(
     name=clinical_settings.agent_name,
     description=clinical_settings.description,
-    model=Gemini(model_name=clinical_settings.model, retry_options=retry_config),
+    model=Gemini(model=clinical_settings.model, retry_options=retry_config),
     instruction=clinical_settings.instruction,
     tools=[
         AgentTool(agent=cardiology_agent),

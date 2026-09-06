@@ -1,6 +1,6 @@
 agent_id: ne01
 agent_name: neurology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified neurologist agent specializing in neurological disorders, cognitive impairment, neuropathy, and cerebrovascular disease.
 instruction: |

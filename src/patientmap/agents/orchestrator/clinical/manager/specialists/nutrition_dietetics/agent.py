@@ -26,7 +26,7 @@ agent_tools = get_tools_from_config(nutrition_settings.tools)
 nutrition_agent = Agent(
     name=nutrition_settings.agent_name,
     description=nutrition_settings.description,
-    model=Gemini(model_name=nutrition_settings.model, retry_options=retry_config),
+    model=Gemini(model=nutrition_settings.model, retry_options=retry_config),
     instruction=nutrition_settings.instruction,
     tools=agent_tools,
     on_tool_error_callback=handle_tool_error,

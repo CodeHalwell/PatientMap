@@ -28,7 +28,7 @@ logic_checker_agent = LlmAgent(
     name=checker_settings.agent_name,
     description=checker_settings.description,
     model=Gemini(
-        model_name=checker_settings.model,
+        model=checker_settings.model,
         retry_options=retry_config
     ),
     instruction=checker_settings.instruction,

@@ -1,6 +1,6 @@
 agent_id: kga001
 agent_name: kg_enrichment_loop_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: An orchestrator agent that coordinates the knowledge graph enrichment loop, delegating between the enrichment agent (builder) and checker agent until validation succeeds.
 instruction: |
    You are the knowledge graph enrichment loop coordinator. Your role is to oversee the iterative enrichment of the patient knowledge graph by delegating to a loop agent that manages the enrichment-checker cycle.

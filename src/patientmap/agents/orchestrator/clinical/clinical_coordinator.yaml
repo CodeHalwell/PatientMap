@@ -1,6 +1,6 @@
 agent_id: cc01
 agent_name: clinical_coordinator
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: |
   Coordinates clinical workflow through analysis, validation, and knowledge graph enrichment phases.
   Orchestrates sequential execution of clinical analysis and knowledge graph integration.

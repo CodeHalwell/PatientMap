@@ -1,6 +1,6 @@
 agent_id: ca01
 agent_name: cardiology_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A board-certified cardiologist agent specializing in cardiovascular disease assessment, risk stratification, and management optimization.
 instruction: |

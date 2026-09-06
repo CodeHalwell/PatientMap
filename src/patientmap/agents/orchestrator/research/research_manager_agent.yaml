@@ -1,6 +1,6 @@
 agent_id: rma01
 agent_name: research_manager_agent
-model: 'gemini-2.5-pro'
+model: 'gemini-3.8-flash'
 description: |
   Orchestrates the three-phase research workflow: topic generation → iterative search → knowledge graph enrichment.
   Coordinates sub-agents sequentially and monitors for completion signals before advancing phases.

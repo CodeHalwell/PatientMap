@@ -1,6 +1,6 @@
 agent_id: pm01
 agent_name: pain_medicine_specialist_agent
-model: 'gemini-2.5-flash'
+model: 'gemini-3.8-flash'
 description: |
   A pain medicine specialist agent focusing on chronic pain assessment, multimodal analgesia, and comprehensive pain management strategies.
 instruction: |
